@@ -33,6 +33,13 @@ def asignar_mensaje(id_mensaje, usuario):
         result = response.json()
         if result['success']:
             st.success(f"Mensaje asignado a {usuario}")
+            # Actualizar las asignaciones en sesión
+            st.session_state.asignaciones[usuario]['Ingreso Nuevo'].append(result['mensaje'])
+            # Remover el mensaje de otras asignaciones si existe
+            for u in usuarios:
+                for e in etapas:
+                    if result['mensaje'] in st.session_state.asignaciones[u][e]:
+                        st.session_state.asignaciones[u][e].remove(result['mensaje'])
     except requests.exceptions.RequestException as e:
         st.error(f"Error al asignar el mensaje: {e}")
 
@@ -42,16 +49,24 @@ def mostrar_solapa(usuario):
     for etapa in etapas:
         st.markdown(f"#### {etapa}")
         mensajes = st.session_state.asignaciones[usuario][etapa]
-        for mensaje in mensajes:
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                nombre = mensaje.get('nombre', 'Desconocido')
-                numero = mensaje.get('numero', 'Sin número')
-                st.write(f"**{nombre} ({numero})**")
-                st.write(f"Mensaje: {mensaje.get('mensaje', '')}")
-            with col2:
-                if st.button("Ver Chat", key=f"chat_{mensaje['id']}"):
-                    st.session_state.solapa_seleccionada = f"chat_{mensaje['id']}"
+        if mensajes:
+            for mensaje in mensajes:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    nombre = mensaje.get('nombre', 'Desconocido')
+                    numero = mensaje.get('numero', 'Sin número')
+                    imagen = mensaje.get('imagen', '')
+                    if imagen:
+                        st.image(imagen, width=50)
+                    else:
+                        st.image("https://via.placeholder.com/50", width=50)
+                    st.write(f"**{nombre} ({numero})**")
+                    st.write(f"Mensaje: {mensaje.get('mensaje', '')}")
+                with col2:
+                    if st.button("Ver Chat", key=f"chat_{mensaje['id']}"):
+                        st.session_state.solapa_seleccionada = f"chat_{mensaje['id']}"
+        else:
+            st.write("No hay mensajes en esta etapa.")
 
     # Botón para volver a la pileta
     if st.button("Volver a la Pileta"):
@@ -62,25 +77,37 @@ def mostrar_chat(mensaje):
     st.markdown(f"### Chat con {mensaje.get('nombre', 'Desconocido')} ({mensaje.get('numero', 'Sin número')})")
     
     # Simulación de chat
-    st.text_area("Conversación", value="Aquí aparecerán los mensajes enviados y recibidos.", height=300)
+    chat_contenido = st.text_area("Conversación", value="Aquí aparecerán los mensajes enviados y recibidos.", height=300)
     
-    st.text_input("Escribe un mensaje")
-    st.file_uploader("Adjuntar archivo", type=['png', 'jpg', 'pdf'])
+    # Inputs para enviar mensajes
+    nuevo_mensaje = st.text_input("Escribe un mensaje")
+    archivo = st.file_uploader("Adjuntar archivo", type=['png', 'jpg', 'pdf'])
     
     if st.button("Enviar"):
-        st.success("Mensaje enviado")
+        if nuevo_mensaje:
+            # Aquí deberías implementar la lógica para enviar el mensaje vía WhatsApp
+            st.write(f"Mensaje enviado a {mensaje['numero']}: {nuevo_mensaje}")
+        if archivo:
+            # Aquí deberías implementar la lógica para enviar el archivo vía WhatsApp
+            st.write(f"Archivo enviado a {mensaje['numero']}: {archivo.name}")
+        st.success("Mensaje y/o archivo enviado")
     
-    # Cambio de etapa
+    # Cambio de etapa del cliente
     nueva_etapa = st.selectbox("Cambiar etapa a:", etapas, index=etapas.index(mensaje['estado']) if mensaje['estado'] in etapas else 0)
     if nueva_etapa != mensaje['estado']:
-        st.write(f"Etapa cambiada a {nueva_etapa}")
-        # Aquí deberías implementar la lógica para actualizar la etapa en el backend y en el frontend
+        try:
+            # Aquí deberías implementar la lógica para actualizar la etapa en el backend
+            # Por ejemplo, crear un endpoint para actualizar el estado
+            st.write(f"Etapa cambiada a {nueva_etapa}")
+            # Esta parte requiere más implementación en el backend para soportar actualizaciones de estado
+        except Exception as e:
+            st.error(f"Error al cambiar la etapa: {e}")
     
     # Reasignar a otro usuario
     nuevo_usuario = st.selectbox("Reasignar a:", usuarios, index=usuarios.index(mensaje.get('usuario', 0)) if 'usuario' in mensaje else 0)
     if nuevo_usuario != mensaje.get('usuario', ''):
         asignar_mensaje(mensaje['id'], nuevo_usuario)
-
+    
     # Botón para volver a la solapa
     if st.button("Volver a la Solapa"):
         st.session_state.solapa_seleccionada = None
@@ -161,3 +188,7 @@ else:
     with col_sofi:
         if st.button("Sofi"):
             st.session_state.solapa_seleccionada = 'Sofi'
+
+    # Mostrar solapas de las asesoras seleccionadas
+    if st.session_state.solapa_seleccionada:
+        mostrar_solapa(st.session_state.solapa_seleccionada)
