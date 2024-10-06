@@ -3,7 +3,7 @@ import requests
 import json
 
 # URL de la API de Node.js expuesta por ngrok
-API_URL = "https://839c-186-128-183-44.ngrok-free.app/mensajes"  # Reemplazá con tu URL de ngrok
+API_URL = "https://839c-186-128-183-44.ngrok-free.app/"  # Reemplazá con tu URL de ngrok
 
 st.title("CRM - Batibot")
 
