@@ -6,16 +6,10 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
-# Lista de clientes inicial (simulación de una base de datos simple)
-clientes = [
-    {"nombre": "Juan Pérez", "telefono": "+5491112345678", "email": "juan@example.com"},
-    {"nombre": "Ana Gómez", "telefono": "+5491122334455", "email": "ana@example.com"},
-]
-
-# Función para iniciar WhatsApp Web y enviar mensaje
-def enviar_mensaje(contacto, mensaje):
+# Función para conectar a WhatsApp Web y aplicar colores a los chats
+def iniciar_whatsapp_y_aplicar_colores(clientes):
     chrome_options = Options()
-    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--start-maximized")  # Asegurar que el navegador se abre maximizado
 
     # Configurar el servicio de ChromeDriver
     service = Service(ChromeDriverManager().install())
@@ -32,48 +26,39 @@ def enviar_mensaje(contacto, mensaje):
             st.success("Sesión de WhatsApp conectada.")
             break
         except:
-            time.sleep(2)  # Espera antes de volver a verificar
+            time.sleep(2)  # Esperar antes de volver a verificar
 
-    # Buscar el contacto en WhatsApp
-    search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
-    search_box.click()
-    search_box.send_keys(contacto)
-    search_box.send_keys(Keys.ENTER)
+    # Aplicar colores personalizados a los chats según los clientes
+    for cliente in clientes:
+        # Usar un identificador para buscar el chat del cliente en la interfaz de WhatsApp Web
+        try:
+            search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
+            search_box.click()
+            search_box.send_keys(cliente['telefono'])
+            search_box.send_keys(Keys.ENTER)
 
-    # Enviar el mensaje
-    time.sleep(2)
-    message_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="6"]')
-    message_box.click()
-    message_box.send_keys(mensaje)
-    message_box.send_keys(Keys.ENTER)
+            # Aplicar color personalizado al chat del cliente
+            script = f"""
+            var chat = document.querySelectorAll('div[role="region"]');
+            for (var i = 0; i < chat.length; i++) {{
+                chat[i].style.backgroundColor = "{cliente['color']}";
+            }}
+            """
+            driver.execute_script(script)
+            st.success(f"Aplicado color {cliente['color']} al chat de {cliente['nombre']}")
+        except:
+            st.error(f"No se pudo encontrar el chat de {cliente['nombre']}.")
 
-    # Cerrar el navegador
-    time.sleep(2)
-    driver.quit()
+# Lista de clientes con colores personalizados
+clientes = [
+    {"nombre": "Juan Pérez", "telefono": "+5491112345678", "color": "#FFCCCC"},
+    {"nombre": "Ana Gómez", "telefono": "+5491122334455", "color": "#CCFFCC"},
+    {"nombre": "Carlos Díaz", "telefono": "+5491133445566", "color": "#CCCCFF"}
+]
 
-# Interfaz principal del CRM
-st.title("CRM de Clientes con WhatsApp")
+# Interfaz de usuario en Streamlit para el CRM
+st.title("CRM con WhatsApp y Colores Personalizados")
 
-# Mostrar lista de clientes
-st.subheader("Lista de clientes")
-for cliente in clientes:
-    st.write(f"Nombre: {cliente['nombre']}")
-    st.write(f"Teléfono: {cliente['telefono']}")
-    st.write(f"Email: {cliente['email']}")
-    if st.button(f"Enviar mensaje a {cliente['nombre']}"):
-        mensaje = st.text_area(f"Escribí el mensaje para {cliente['nombre']}")
-        if st.button("Enviar mensaje"):
-            enviar_mensaje(cliente['telefono'], mensaje)
-
-# Agregar un nuevo cliente
-st.subheader("Agregar nuevo cliente")
-with st.form(key="form_nuevo_cliente"):
-    nuevo_nombre = st.text_input("Nombre")
-    nuevo_telefono = st.text_input("Teléfono")
-    nuevo_email = st.text_input("Email")
-    submit_button = st.form_submit_button("Agregar cliente")
-
-    if submit_button:
-        nuevo_cliente = {"nombre": nuevo_nombre, "telefono": nuevo_telefono, "email": nuevo_email}
-        clientes.append(nuevo_cliente)
-        st.success(f"Cliente {nuevo_nombre} agregado con éxito.")
+# Botón para iniciar WhatsApp y aplicar colores
+if st.button("Iniciar WhatsApp y aplicar colores"):
+    iniciar_whatsapp_y_aplicar_colores(clientes)
