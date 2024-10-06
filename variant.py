@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+import time
 
 # Función para enviar un mensaje a través de WhatsApp Web usando Selenium
 def enviar_mensaje(contacto, mensaje):
@@ -9,10 +10,19 @@ def enviar_mensaje(contacto, mensaje):
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
 
+    # Acceder a WhatsApp Web
     driver.get('https://web.whatsapp.com')
 
-    # Esperamos a que el usuario escanee el código QR
-    input("Escaneá el código QR en WhatsApp Web y presioná Enter...")
+    # Esperamos hasta que el usuario haya escaneado el código QR
+    st.info("Escanea el código QR de WhatsApp Web y espera a que se conecte.")
+    while True:
+        try:
+            # Comprobar si la sesión de WhatsApp ha sido iniciada correctamente (cuando se carga el chat principal)
+            driver.find_element(By.XPATH, '//div[@id="side"]')
+            st.success("Sesión de WhatsApp conectada.")
+            break
+        except:
+            time.sleep(2)  # Esperar antes de volver a comprobar si se ha iniciado la sesión
 
     # Buscar el contacto en WhatsApp
     search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
@@ -32,3 +42,18 @@ def enviar_mensaje(contacto, mensaje):
     # Esperamos y cerramos el navegador
     time.sleep(2)
     driver.quit()
+
+# Interfaz de usuario en Streamlit
+st.title("Automatización de WhatsApp con Selenium")
+
+# Campos para ingresar el contacto y el mensaje
+contacto = st.text_input("Nombre del contacto o número (incluye el código de país):")
+mensaje = st.text_area("Mensaje a enviar:")
+
+# Botón para enviar el mensaje
+if st.button("Enviar mensaje"):
+    if contacto and mensaje:
+        enviar_mensaje(contacto, mensaje)
+        st.success(f"Mensaje enviado a {contacto}")
+    else:
+        st.error("Por favor, completá los campos de contacto y mensaje.")
