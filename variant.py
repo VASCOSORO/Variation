@@ -4,7 +4,7 @@ import streamlit as st
 import requests
 
 # URL de la API de Node.js expuesta por ngrok
-API_URL = "https://<subdominio>.ngrok.io"  # Reemplazá <subdominio> con tu subdominio de ngrok
+API_URL = " https://839c-186-128-183-44.ngrok-free.app"  # Reemplazá <subdominio> con tu subdominio de ngrok
 
 st.title('Batibot')
 
