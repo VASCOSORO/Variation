@@ -14,6 +14,14 @@ asignaciones = {usuario: [] for usuario in usuarios}
 if 'view' not in st.session_state:
     st.session_state.view = 'pileta'
 
+# Definir los colores asignados a cada usuario (se movió para que esté disponible globalmente)
+colores_usuarios = {
+    'Marian': '#FF5733',  # Naranja vibrante
+    'Emily': '#33FF57',   # Verde vibrante
+    'Valen': '#3357FF',   # Azul vibrante
+    'Sofi': '#FF33A6'     # Rosa vibrante
+}
+
 st.title('CRM - Batibot')
 
 # Obtener los mensajes desde la API de Node.js
