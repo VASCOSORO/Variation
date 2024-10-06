@@ -4,10 +4,13 @@ import requests
 # URL de la API de Node.js expuesta por ngrok
 API_URL = "https://839c-186-128-183-44.ngrok-free.app"  # Reemplazá con la URL pública de ngrok
 
-st.title('CRM - Batibot')
-
 # Lista de usuarios para asignar los mensajes
-usuarios = ['Usuario 1', 'Usuario 2', 'Usuario 3', 'Usuario 4']
+usuarios = ['Marian', 'Emily', 'Valen', 'Sofi']
+
+# Diccionario para almacenar los mensajes asignados a cada usuario
+asignaciones = {usuario: [] for usuario in usuarios}
+
+st.title('CRM - Batibot')
 
 # Obtener los mensajes desde la API de Node.js
 try:
@@ -19,52 +22,68 @@ except Exception as e:
 
 st.header("Mensajes de WhatsApp")
 
-# Organizar los mensajes en columnas como CRM
-col1, col2, col3 = st.columns([3, 2, 3])
+# Crear las cinco columnas: Pileta, Marian, Emily, Valen, Sofi
+col_pileta, col_marian, col_emily, col_valen, col_sofi = st.columns([2, 1, 1, 1, 1])
 
 # URL pública para la imagen predeterminada
 default_image_url = "https://via.placeholder.com/50"
 
-# Procesar cada mensaje y mostrar en columnas
-for idx, mensaje in enumerate(mensajes):
-    with col1:
+# Diccionario temporal para asignar los mensajes a usuarios
+asignaciones_temp = {usuario: [] for usuario in usuarios}
+
+# Mostrar mensajes en la "Pileta"
+with col_pileta:
+    st.subheader("Pileta")
+    for idx, mensaje in enumerate(mensajes):
         # Mostrar imagen de perfil desde URL predeterminada
-        st.image(default_image_url, width=50)  # Imagen predeterminada
+        st.image(default_image_url, width=50)
         
         # Mostrar número o nombre
         if 'nombre' in mensaje:
             st.markdown(f"**{mensaje['nombre']}**")
-        st.markdown(f"**{mensaje['numero']}**")
+        else:
+            st.markdown(f"**{mensaje['numero']}**")
         
         # Mostrar mensaje (si no es multimedia)
         if not mensaje.get('esMedia', False):
             st.markdown(mensaje['mensaje'])
-
-    with col2:
-        # Selector para asignar a un usuario
+        
+        # Seleccionar a qué usuario asignar el mensaje
         usuario_asignado = st.selectbox('Asignar a:', usuarios, key=f"usuario_{idx}")
 
-        # Botón para asignar el mensaje al usuario seleccionado
+        # Botón para mover el mensaje a la columna del usuario seleccionado
         if st.button(f"Asignar {mensaje['numero']}", key=f"asignar_{idx}"):
+            asignaciones_temp[usuario_asignado].append(mensaje)
             st.success(f"Mensaje asignado a {usuario_asignado}")
 
-    with col3:
-        # Mostrar el estado del mensaje
-        if not mensaje.get('esMedia', False):
-            st.markdown(f"Estado: En proceso")
-        else:
-            st.markdown(f"Archivo multimedia recibido")
-        
-        # Simulación de envío de respuesta
-        respuesta = st.text_input(f"Responder a {mensaje['numero']}", key=f"respuesta_{idx}")
-        if st.button(f"Enviar respuesta {mensaje['numero']}", key=f"enviar_{idx}"):
-            data = {"numero": mensaje['numero'], "mensaje": respuesta}
-            try:
-                post_response = requests.post(f"{API_URL}/enviar-mensaje", json=data)
-                if post_response.status_code == 200:
-                    st.success(f"Respuesta enviada a {mensaje['numero']}")
-                else:
-                    st.error("Error al enviar la respuesta")
-            except Exception as e:
-                st.error(f"Error al conectar con la API: {e}")
-    st.markdown("---")
+# Mostrar los mensajes asignados a Marian
+with col_marian:
+    st.subheader("Marian")
+    for mensaje in asignaciones_temp['Marian']:
+        st.image(default_image_url, width=50)
+        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
+        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+
+# Mostrar los mensajes asignados a Emily
+with col_emily:
+    st.subheader("Emily")
+    for mensaje in asignaciones_temp['Emily']:
+        st.image(default_image_url, width=50)
+        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
+        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+
+# Mostrar los mensajes asignados a Valen
+with col_valen:
+    st.subheader("Valen")
+    for mensaje in asignaciones_temp['Valen']:
+        st.image(default_image_url, width=50)
+        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
+        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+
+# Mostrar los mensajes asignados a Sofi
+with col_sofi:
+    st.subheader("Sofi")
+    for mensaje in asignaciones_temp['Sofi']:
+        st.image(default_image_url, width=50)
+        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
+        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
