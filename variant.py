@@ -1,20 +1,25 @@
-import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+import streamlit as st
 import time
 
 # Función para enviar un mensaje a través de WhatsApp Web usando Selenium
 def enviar_mensaje(contacto, mensaje):
+    # Configurar opciones de Chrome
+    chrome_options = Options()
+    chrome_options.add_argument("--start-maximized")  # Maximiza la ventana del navegador
+
     # Configuramos el servicio de ChromeDriver con webdriver_manager
     service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # Acceder a WhatsApp Web
     driver.get('https://web.whatsapp.com')
 
-    # Esperamos hasta que el usuario haya escaneado el código QR
+    # Esperamos a que el usuario escanee el código QR
     st.info("Escanea el código QR de WhatsApp Web y espera a que se conecte.")
     while True:
         try:
