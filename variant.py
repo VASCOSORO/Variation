@@ -1,83 +1,55 @@
-// botvar.js
+# app.py
 
-const fs = require('fs');
-const express = require('express');
-const { Client, MessageMedia } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
-const path = './conversaciones.csv';
-const mediaFolder = './media';
+import streamlit as st
+import requests
 
-// Crear la carpeta 'media' si no existe
-if (!fs.existsSync(mediaFolder)){
-    fs.mkdirSync(mediaFolder);
-}
+# URL de la API de Node.js expuesta por ngrok
+API_URL = "https://<subdominio>.ngrok.io"  # Reemplazá <subdominio> con tu subdominio de ngrok
 
-const app = express();
-app.use(express.json());  // Middleware para aceptar JSON
+st.title('CRM - Batibot')
 
-const client = new Client();
-let mensajes = [];  // Lista temporal de mensajes
+# Lista de usuarios para asignar los mensajes
+usuarios = ['Usuario 1', 'Usuario 2', 'Usuario 3', 'Usuario 4']
 
-client.on('qr', (qr) => {
-    qrcode.generate(qr, { small: true });
-    console.log('Escaneá este código QR para conectarte a WhatsApp');
-});
+# Obtener los mensajes desde la API de Node.js
+try:
+    response = requests.get(f"{API_URL}/mensajes")
+    mensajes = response.json()
+except Exception as e:
+    st.error(f"No se pudo conectar con la API: {e}")
+    mensajes = []
 
-client.on('ready', () => {
-    console.log('WhatsApp Web está conectado.');
-});
+st.header("Mensajes de WhatsApp")
 
-// Función para guardar mensajes en CSV con codificación UTF-8
-const guardarMensajeCSV = (numero, mensaje, esBot, esMedia = false, rutaMedia = '') => {
-    const header = "Numero,Mensaje,Fecha,EnviadoPorBot,EsMedia,RutaMedia\n";
-    const nuevaLinea = `${numero},"${mensaje.replace(/"/g, '""').replace(/\n/g, " ")}",${new Date().toLocaleString()},${esBot},${esMedia},${rutaMedia}\n`;
-
-    if (!fs.existsSync(path)) {
-        fs.writeFileSync(path, header, { encoding: 'utf-8' });
-    }
-
-    fs.appendFileSync(path, nuevaLinea, { encoding: 'utf-8' });
-};
-
-// Guardar mensajes en la lista temporal y en el CSV
-client.on('message_create', async (message) => {
-    const esBot = message.fromMe ? true : false;
+# Mostrar los mensajes y permitir asignarlos a usuarios
+for idx, mensaje in enumerate(mensajes):
+    st.subheader(f"Mensaje {idx + 1}")
+    st.markdown(f"**De:** {mensaje['numero']}")
     
-    if (message.hasMedia) {
-        const media = await message.downloadMedia();
-        const extension = media.mimetype.split('/')[1];
-        const rutaArchivo = `${mediaFolder}/${message.id.id}.${extension}`;
-        fs.writeFileSync(rutaArchivo, media.data, { encoding: 'base64' });
-
-        guardarMensajeCSV(message.from, "Media file", esBot, true, rutaArchivo);
-        mensajes.push({ numero: message.from, mensaje: "Media file", esBot, esMedia: true, rutaMedia: rutaArchivo });
-    } else {
-        guardarMensajeCSV(message.from, message.body, esBot);
-        mensajes.push({ numero: message.from, mensaje: message.body, esBot, esMedia: false });
-    }
-
-    console.log(`Mensaje guardado de ${message.from}: ${message.body} (Enviado por bot: ${esBot})`);
-});
-
-// Ruta para obtener los mensajes en Streamlit
-app.get('/mensajes', (req, res) => {
-    res.json(mensajes);
-});
-
-// Ruta para enviar un mensaje
-app.post('/enviar-mensaje', (req, res) => {
-    const { numero, mensaje } = req.body;
-    client.sendMessage(numero, mensaje)
-        .then(response => {
-            guardarMensajeCSV(numero, mensaje, true);
-            mensajes.push({ numero: numero, mensaje: mensaje, esBot: true, esMedia: false, rutaMedia: '' });
-            res.status(200).json({ success: true, message: 'Mensaje enviado' });
-        })
-        .catch(err => res.status(500).json({ success: false, error: err }));
-});
-
-client.initialize();
-
-app.listen(3000, () => {
-    console.log('Servidor API escuchando en http://localhost:3000');
-});
+    if mensaje['esMedia']:
+        st.markdown(f"**Archivo multimedia:** [Ver archivo]({API_URL}/{mensaje['rutaMedia']})")
+    else:
+        st.markdown(f"**Mensaje:** {mensaje['mensaje']}")
+    
+    # Selector para asignar el mensaje a un usuario
+    usuario_asignado = st.selectbox('Asignar a un usuario', usuarios, key=f"usuario_{idx}")
+    
+    # Campo para escribir una respuesta
+    respuesta = st.text_input(f"Escribí una respuesta para {mensaje['numero']}", key=f"respuesta_{idx}")
+    
+    # Botón para enviar la respuesta
+    if st.button("Enviar respuesta", key=f"enviar_{idx}"):
+        if respuesta.strip() == "":
+            st.warning("El mensaje de respuesta no puede estar vacío.")
+        else:
+            data = {"numero": mensaje['numero'], "mensaje": respuesta}
+            try:
+                post_response = requests.post(f"{API_URL}/enviar-mensaje", json=data)
+                if post_response.status_code == 200:
+                    st.success("Mensaje enviado correctamente")
+                else:
+                    st.error("Error al enviar el mensaje")
+            except Exception as e:
+                st.error(f"Error al conectar con la API: {e}")
+    
+    st.markdown("---")
