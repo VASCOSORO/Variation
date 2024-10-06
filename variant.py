@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # URL de la API de Node.js expuesta por ngrok (o tu servidor local)
-API_URL = "2mccp30fSOG88UK23nAE3B0912H_5dgLAheHgUDT84SR6yWx6"  # Cambia esto si usas ngrok
+API_URL = "https://839c-186-128-183-44.ngrok-free.app"  # Cambia esto si usas ngrok
 
 # Lista de usuarios y etapas
 usuarios = ['Marian', 'Emily', 'Valen', 'Sofi']
