@@ -4,25 +4,22 @@ import requests
 # URL de la API de Node.js expuesta por ngrok
 API_URL = "https://839c-186-128-183-44.ngrok-free.app"  # Reemplazá con la URL pública de ngrok
 
-# Lista de usuarios para asignar los mensajes
+# Lista de usuarios y etapas
 usuarios = ['Marian', 'Emily', 'Valen', 'Sofi']
+etapas = ['Ingreso Nuevo', 'En Charla', 'Agregando Productos', 'Esperando Pago', 'Pedido Enviado', 'SandBox']
 
-# Diccionario para almacenar los mensajes asignados a cada usuario
-asignaciones = {usuario: [] for usuario in usuarios}
+# Diccionario para almacenar los mensajes asignados y sus etapas
+asignaciones = {usuario: {'Ingreso Nuevo': [], 'En Charla': [], 'Agregando Productos': [], 'Esperando Pago': [], 'Pedido Enviado': [], 'SandBox': []} for usuario in usuarios}
 
 # Estado inicial de la app
 if 'view' not in st.session_state:
     st.session_state.view = 'pileta'
 
-# Definir los colores asignados a cada usuario (se movió para que esté disponible globalmente)
-colores_usuarios = {
-    'Marian': '#FF5733',  # Naranja vibrante
-    'Emily': '#33FF57',   # Verde vibrante
-    'Valen': '#3357FF',   # Azul vibrante
-    'Sofi': '#FF33A6'     # Rosa vibrante
-}
+if 'chat_abierto' not in st.session_state:
+    st.session_state.chat_abierto = False
 
-st.title('CRM - Batibot')
+# URL pública para la imagen predeterminada
+default_image_url = "https://via.placeholder.com/50"
 
 # Obtener los mensajes desde la API de Node.js
 try:
@@ -32,39 +29,68 @@ except Exception as e:
     st.error(f"No se pudo conectar con la API: {e}")
     mensajes = []
 
-# URL pública para la imagen predeterminada
-default_image_url = "https://via.placeholder.com/50"
+# Definir colores por usuario
+colores_usuarios = {
+    'Marian': '#FF5733',  # Naranja vibrante
+    'Emily': '#33FF57',   # Verde vibrante
+    'Valen': '#3357FF',   # Azul vibrante
+    'Sofi': '#FF33A6'     # Rosa vibrante
+}
 
-# Función para mostrar la columna de un usuario con color y más vida
+# Función para mostrar los mensajes asignados a un usuario en su etapa
 def mostrar_usuario(usuario):
     st.markdown(f"<div style='background-color:{colores_usuarios[usuario]}; padding: 20px; border-radius: 10px;'>", unsafe_allow_html=True)
     st.markdown(f"<h2 style='color:white;'>Solapa de {usuario}</h2>", unsafe_allow_html=True)
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     
-    # Reducir el tamaño de los títulos de las columnas
-    with col1:
-        st.markdown("<h3 style='color:white;'>Ingreso Nuevo</h3>", unsafe_allow_html=True)
-        for mensaje in asignaciones[usuario]:
-            st.image(default_image_url, width=50)
-            st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
-            st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
-    
-    with col2:
-        st.markdown("<h3 style='color:white;'>En Charla</h3>", unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("<h3 style='color:white;'>Agregando Productos</h3>", unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown("<h3 style='color:white;'>Cliente Esperando Pago</h3>", unsafe_allow_html=True)
-    
-    with col5:
-        st.markdown("<h3 style='color:white;'>Pedido Enviado</h3>", unsafe_allow_html=True)
-    
-    with col6:
-        st.markdown("<h3 style='color:white;'>SandBox</h3>", unsafe_allow_html=True)
+    # Mostrar mensajes por etapa
+    for idx, (col, etapa) in enumerate(zip([col1, col2, col3, col4, col5, col6], etapas)):
+        with col:
+            st.markdown(f"<h3 style='color:white;'>{etapa}</h3>", unsafe_allow_html=True)
+            for mensaje in asignaciones[usuario][etapa]:
+                if st.button(f"Ver chat {mensaje['numero']}", key=f"chat_{usuario}_{etapa}_{idx}"):
+                    st.session_state.view = 'chat'
+                    st.session_state.mensaje_chat = mensaje
+                    st.session_state.usuario_chat = usuario
+                    st.session_state.etapa_chat = etapa
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+# Función para la vista de chat
+def mostrar_chat():
+    mensaje = st.session_state.mensaje_chat
+    usuario = st.session_state.usuario_chat
+    etapa = st.session_state.etapa_chat
+
+    st.subheader(f"Chat con {mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']} ({etapa})")
+    st.text_area("Chat", value=f"Mensajes enviados y recibidos con {mensaje['numero']}", height=300)
+
+    st.text_input("Escribe un mensaje")
+    st.file_uploader("Adjuntar archivo", type=['png', 'jpg', 'pdf'])
+    
+    # Botón para enviar un nuevo mensaje
+    if st.button("Enviar"):
+        st.success(f"Mensaje enviado a {mensaje['numero']}")
+    
+    # Cambiar etapa del cliente
+    nueva_etapa = st.selectbox("Cambiar etapa a:", etapas, index=etapas.index(etapa))
+    if nueva_etapa != etapa:
+        asignaciones[usuario][etapa].remove(mensaje)
+        asignaciones[usuario][nueva_etapa].append(mensaje)
+        st.session_state.etapa_chat = nueva_etapa
+        st.success(f"Etapa cambiada a {nueva_etapa}")
+    
+    # Reasignar a otro usuario
+    nuevo_usuario = st.selectbox("Reasignar a:", usuarios, index=usuarios.index(usuario))
+    if nuevo_usuario != usuario:
+        asignaciones[usuario][etapa].remove(mensaje)
+        asignaciones[nuevo_usuario]['Ingreso Nuevo'].append(mensaje)
+        st.session_state.usuario_chat = nuevo_usuario
+        st.session_state.etapa_chat = 'Ingreso Nuevo'
+        st.success(f"Reasignado a {nuevo_usuario}")
+
+    if st.button("Volver a la Solapa"):
+        st.session_state.view = 'pileta'
 
 # Interfaz de la "pileta" principal
 if st.session_state.view == 'pileta':
@@ -76,21 +102,18 @@ if st.session_state.view == 'pileta':
     with col_pileta:
         st.subheader("Pileta")
         for idx, mensaje in enumerate(mensajes):
-            row1, row2 = st.columns([1, 2])  # Ajustar las columnas de imagen y desplegable
+            row1, row2 = st.columns([1, 2])
 
-            # Columna 1: Imagen y número
             with row1:
                 st.image(default_image_url, width=50)
                 st.markdown(f"**{mensaje['numero']}**")
 
-            # Columna 2: Mensaje y desplegable de asignación
             with row2:
                 st.markdown(f"**{mensaje['mensaje']}**")
                 usuario_asignado = st.selectbox('Asignar a:', usuarios, key=f"usuario_{idx}")
 
-            # Botón de asignar, centrado
             if st.button(f"Asignar {mensaje['numero']}", key=f"asignar_{idx}"):
-                asignaciones[usuario_asignado].append(mensaje)
+                asignaciones[usuario_asignado]['Ingreso Nuevo'].append(mensaje)
                 st.success(f"Mensaje asignado a {usuario_asignado}")
 
     # Botones para cambiar de vista a las solapas de cada usuario
@@ -110,26 +133,27 @@ if st.session_state.view == 'pileta':
         if st.button("Sofi"):
             st.session_state.view = 'Sofi'
 
-# Mostrar la solapa de Marian
+# Mostrar solapas
 if st.session_state.view == 'Marian':
     mostrar_usuario('Marian')
     if st.button("Volver a la Pileta"):
         st.session_state.view = 'pileta'
 
-# Mostrar la solapa de Emily
 if st.session_state.view == 'Emily':
     mostrar_usuario('Emily')
     if st.button("Volver a la Pileta"):
         st.session_state.view = 'pileta'
 
-# Mostrar la solapa de Valen
 if st.session_state.view == 'Valen':
     mostrar_usuario('Valen')
     if st.button("Volver a la Pileta"):
         st.session_state.view = 'pileta'
 
-# Mostrar la solapa de Sofi
 if st.session_state.view == 'Sofi':
     mostrar_usuario('Sofi')
     if st.button("Volver a la Pileta"):
         st.session_state.view = 'pileta'
+
+# Mostrar el chat
+if st.session_state.view == 'chat':
+    mostrar_chat()
