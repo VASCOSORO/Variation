@@ -6,7 +6,7 @@ import requests
 # URL de la API de Node.js expuesta por ngrok
 API_URL = "https://<subdominio>.ngrok.io"  # Reemplazá <subdominio> con tu subdominio de ngrok
 
-st.title('CRM - Batibot')
+st.title('Batibot')
 
 # Lista de usuarios para asignar los mensajes
 usuarios = ['Usuario 1', 'Usuario 2', 'Usuario 3', 'Usuario 4']
