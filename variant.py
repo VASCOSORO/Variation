@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-from PIL import Image
 
 # URL de la API de Node.js expuesta por ngrok
 API_URL = "https://839c-186-128-183-44.ngrok-free.app"  # Reemplazá con la URL pública de ngrok
@@ -23,11 +22,14 @@ st.header("Mensajes de WhatsApp")
 # Organizar los mensajes en columnas como CRM
 col1, col2, col3 = st.columns([3, 2, 3])
 
+# URL pública para la imagen predeterminada
+default_image_url = "https://via.placeholder.com/50"
+
 # Procesar cada mensaje y mostrar en columnas
 for idx, mensaje in enumerate(mensajes):
     with col1:
-        # Mostrar imagen de perfil si existe (en este caso, se usará una imagen predeterminada)
-        st.image("default-profile.png", width=50)  # Imagen predeterminada (podés agregar el archivo en tu directorio)
+        # Mostrar imagen de perfil desde URL predeterminada
+        st.image(default_image_url, width=50)  # Imagen predeterminada
         
         # Mostrar número o nombre
         if 'nombre' in mensaje:
