@@ -1,3 +1,4 @@
+import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -17,7 +18,7 @@ def enviar_mensaje(contacto, mensaje):
     st.info("Escanea el código QR de WhatsApp Web y espera a que se conecte.")
     while True:
         try:
-            # Comprobar si la sesión de WhatsApp ha sido iniciada correctamente (cuando se carga el chat principal)
+            # Comprobar si la sesión de WhatsApp ha sido iniciada correctamente
             driver.find_element(By.XPATH, '//div[@id="side"]')
             st.success("Sesión de WhatsApp conectada.")
             break
