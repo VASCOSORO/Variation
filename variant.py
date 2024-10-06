@@ -18,16 +18,20 @@ if 'view' not in st.session_state:
 if 'chat_abierto' not in st.session_state:
     st.session_state.chat_abierto = False
 
-# URL pública para la imagen predeterminada
-default_image_url = "https://via.placeholder.com/50"
+# Lista de mensajes en la "Pileta"
+if 'mensajes_pileta' not in st.session_state:
+    st.session_state.mensajes_pileta = []
 
 # Obtener los mensajes desde la API de Node.js
 try:
     response = requests.get(f"{API_URL}/mensajes")
     mensajes = response.json()
+    st.session_state.mensajes_pileta = mensajes  # Guardar los mensajes en el estado
 except Exception as e:
     st.error(f"No se pudo conectar con la API: {e}")
-    mensajes = []
+
+# URL pública para la imagen predeterminada
+default_image_url = "https://via.placeholder.com/50"
 
 # Definir colores por usuario
 colores_usuarios = {
@@ -101,7 +105,7 @@ if st.session_state.view == 'pileta':
     # Mostrar mensajes en la "Pileta"
     with col_pileta:
         st.subheader("Pileta")
-        for idx, mensaje in enumerate(mensajes):
+        for idx, mensaje in enumerate(st.session_state.mensajes_pileta):
             row1, row2 = st.columns([1, 2])
 
             with row1:
@@ -114,6 +118,8 @@ if st.session_state.view == 'pileta':
 
             if st.button(f"Asignar {mensaje['numero']}", key=f"asignar_{idx}"):
                 asignaciones[usuario_asignado]['Ingreso Nuevo'].append(mensaje)
+                # Eliminar mensaje de la pileta
+                st.session_state.mensajes_pileta.pop(idx)
                 st.success(f"Mensaje asignado a {usuario_asignado}")
 
     # Botones para cambiar de vista a las solapas de cada usuario
