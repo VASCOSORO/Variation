@@ -27,32 +27,44 @@ except Exception as e:
 # URL pública para la imagen predeterminada
 default_image_url = "https://via.placeholder.com/50"
 
-# Función para mostrar la columna de un usuario
+# Definir los colores asignados a cada usuario
+colores_usuarios = {
+    'Marian': '#FFDDC1',
+    'Emily': '#C1FFD7',
+    'Valen': '#C1E1FF',
+    'Sofi': '#FFC1E1'
+}
+
+# Función para mostrar la columna de un usuario con color
 def mostrar_usuario(usuario):
-    st.subheader(f"Solapa de {usuario}")
+    st.markdown(f"<div style='background-color:{colores_usuarios[usuario]}; padding: 10px; border-radius: 10px;'>", unsafe_allow_html=True)
+    st.subheader(f"Solapa de {usuario}", anchor=f"solapa_{usuario}")
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     
+    # Reducir el tamaño de los títulos de las columnas
     with col1:
-        st.subheader("Ingreso Nuevo")
+        st.markdown("### Ingreso Nuevo")
         for mensaje in asignaciones[usuario]:
             st.image(default_image_url, width=50)
             st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
             st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
     
     with col2:
-        st.subheader("En Charla")
+        st.markdown("### En Charla")
     
     with col3:
-        st.subheader("Agregando Productos")
+        st.markdown("### Agregando Productos")
     
     with col4:
-        st.subheader("Cliente Con Pedido Esperando Pago")
+        st.markdown("### Cliente Con Pedido Esperando Pago")
     
     with col5:
-        st.subheader("Pedido Enviado")
+        st.markdown("### Pedido Enviado")
     
     with col6:
-        st.subheader("SandBox")
+        st.markdown("### SandBox")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Interfaz de la "pileta" principal
 if st.session_state.view == 'pileta':
