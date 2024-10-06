@@ -8,10 +8,14 @@ import time
 
 # Función para conectar a WhatsApp Web y aplicar colores a los chats
 def iniciar_whatsapp_y_aplicar_colores(clientes):
+    # Configurar opciones de Chrome
     chrome_options = Options()
     chrome_options.add_argument("--start-maximized")  # Asegurar que el navegador se abre maximizado
+    chrome_options.add_argument("--headless")  # Ejecutar en modo sin interfaz gráfica (opcional)
+    chrome_options.add_argument("--disable-gpu")  # Necesario para algunos entornos en headless mode
+    chrome_options.add_argument("--no-sandbox")  # Evitar problemas en algunos entornos de servidor
 
-    # Configurar el servicio de ChromeDriver
+    # Configuramos el servicio de ChromeDriver con webdriver_manager
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
