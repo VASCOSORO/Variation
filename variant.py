@@ -1,60 +1,83 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
-import time
+// botvar.js
 
-# Función para conectar a WhatsApp Web y aplicar colores a los chats
-def iniciar_whatsapp_y_aplicar_colores(clientes):
-    # Configurar opciones de Chrome
-    chrome_options = Options()
-    chrome_options.add_argument("--start-maximized")  # Asegurar que el navegador se abre maximizado
+const fs = require('fs');
+const express = require('express');
+const { Client, MessageMedia } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+const path = './conversaciones.csv';
+const mediaFolder = './media';
 
-    # Configuramos el servicio de ChromeDriver con webdriver_manager
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+// Crear la carpeta 'media' si no existe
+if (!fs.existsSync(mediaFolder)){
+    fs.mkdirSync(mediaFolder);
+}
 
-    # Acceder a WhatsApp Web
-    driver.get('https://web.whatsapp.com')
+const app = express();
+app.use(express.json());  // Middleware para aceptar JSON
 
-    # Esperar a que el usuario escanee el código QR
-    print("Escanea el código QR de WhatsApp Web.")
-    while True:
-        try:
-            driver.find_element(By.XPATH, '//div[@id="side"]')  # Detecta si la sesión está iniciada
-            print("Sesión de WhatsApp conectada.")
-            break
-        except:
-            time.sleep(2)  # Esperar antes de volver a verificar
+const client = new Client();
+let mensajes = [];  // Lista temporal de mensajes
 
-    # Aplicar colores personalizados a los chats según los clientes
-    for cliente in clientes:
-        # Usar un identificador para buscar el chat del cliente en la interfaz de WhatsApp Web
-        try:
-            search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
-            search_box.click()
-            search_box.send_keys(cliente['telefono'])
-            search_box.send_keys(Keys.ENTER)
+client.on('qr', (qr) => {
+    qrcode.generate(qr, { small: true });
+    console.log('Escaneá este código QR para conectarte a WhatsApp');
+});
 
-            # Aplicar color personalizado al chat del cliente
-            script = f"""
-            var chat = document.querySelectorAll('div[role="region"]');
-            for (var i = 0; i < chat.length; i++) {{
-                chat[i].style.backgroundColor = "{cliente['color']}";
-            }}
-            """
-            driver.execute_script(script)
-            print(f"Aplicado color {cliente['color']} al chat de {cliente['nombre']}")
-        except:
-            print(f"No se pudo encontrar el chat de {cliente['nombre']}.")
+client.on('ready', () => {
+    console.log('WhatsApp Web está conectado.');
+});
 
-# Lista de clientes con colores personalizados
-clientes = [
-    {"nombre": "Juan Pérez", "telefono": "+5491112345678", "color": "#FFCCCC"},
-    {"nombre": "Ana Gómez", "telefono": "+5491122334455", "color": "#CCFFCC"},
-    {"nombre": "Carlos Díaz", "telefono": "+5491133445566", "color": "#CCCCFF"}
-]
+// Función para guardar mensajes en CSV con codificación UTF-8
+const guardarMensajeCSV = (numero, mensaje, esBot, esMedia = false, rutaMedia = '') => {
+    const header = "Numero,Mensaje,Fecha,EnviadoPorBot,EsMedia,RutaMedia\n";
+    const nuevaLinea = `${numero},"${mensaje.replace(/"/g, '""').replace(/\n/g, " ")}",${new Date().toLocaleString()},${esBot},${esMedia},${rutaMedia}\n`;
 
-# Ejecutar la función
-iniciar_whatsapp_y_aplicar_colores(clientes)
+    if (!fs.existsSync(path)) {
+        fs.writeFileSync(path, header, { encoding: 'utf-8' });
+    }
+
+    fs.appendFileSync(path, nuevaLinea, { encoding: 'utf-8' });
+};
+
+// Guardar mensajes en la lista temporal y en el CSV
+client.on('message_create', async (message) => {
+    const esBot = message.fromMe ? true : false;
+    
+    if (message.hasMedia) {
+        const media = await message.downloadMedia();
+        const extension = media.mimetype.split('/')[1];
+        const rutaArchivo = `${mediaFolder}/${message.id.id}.${extension}`;
+        fs.writeFileSync(rutaArchivo, media.data, { encoding: 'base64' });
+
+        guardarMensajeCSV(message.from, "Media file", esBot, true, rutaArchivo);
+        mensajes.push({ numero: message.from, mensaje: "Media file", esBot, esMedia: true, rutaMedia: rutaArchivo });
+    } else {
+        guardarMensajeCSV(message.from, message.body, esBot);
+        mensajes.push({ numero: message.from, mensaje: message.body, esBot, esMedia: false });
+    }
+
+    console.log(`Mensaje guardado de ${message.from}: ${message.body} (Enviado por bot: ${esBot})`);
+});
+
+// Ruta para obtener los mensajes en Streamlit
+app.get('/mensajes', (req, res) => {
+    res.json(mensajes);
+});
+
+// Ruta para enviar un mensaje
+app.post('/enviar-mensaje', (req, res) => {
+    const { numero, mensaje } = req.body;
+    client.sendMessage(numero, mensaje)
+        .then(response => {
+            guardarMensajeCSV(numero, mensaje, true);
+            mensajes.push({ numero: numero, mensaje: mensaje, esBot: true, esMedia: false, rutaMedia: '' });
+            res.status(200).json({ success: true, message: 'Mensaje enviado' });
+        })
+        .catch(err => res.status(500).json({ success: false, error: err }));
+});
+
+client.initialize();
+
+app.listen(3000, () => {
+    console.log('Servidor API escuchando en http://localhost:3000');
+});
