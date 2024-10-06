@@ -70,17 +70,8 @@ def mostrar_chat():
     etapa = st.session_state.etapa_chat
 
     st.subheader(f"Chat con {mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']} ({etapa})")
-    
-    # Chat - Mostrar mensajes enviados y recibidos
     st.text_area("Chat", value=f"Mensajes enviados y recibidos con {mensaje['numero']}", height=300)
 
-    # Datos del contacto
-    st.subheader(f"Datos de {mensaje['numero']}")
-    st.text(f"Nombre: {mensaje.get('nombre', 'Desconocido')}")
-    st.text(f"Estado: {mensaje.get('estado', 'Desconocido')}")
-    st.text(f"Imagen de perfil: {mensaje.get('imagen', 'No disponible')}")
-    
-    # Inputs para el chat
     st.text_input("Escribe un mensaje")
     st.file_uploader("Adjuntar archivo", type=['png', 'jpg', 'pdf'])
     
