@@ -10,6 +10,10 @@ usuarios = ['Marian', 'Emily', 'Valen', 'Sofi']
 # Diccionario para almacenar los mensajes asignados a cada usuario
 asignaciones = {usuario: [] for usuario in usuarios}
 
+# Estado inicial de la app
+if 'view' not in st.session_state:
+    st.session_state.view = 'pileta'
+
 st.title('CRM - Batibot')
 
 # Obtener los mensajes desde la API de Node.js
@@ -20,70 +24,104 @@ except Exception as e:
     st.error(f"No se pudo conectar con la API: {e}")
     mensajes = []
 
-st.header("Mensajes de WhatsApp")
-
-# Crear las cinco columnas: Pileta, Marian, Emily, Valen, Sofi
-col_pileta, col_marian, col_emily, col_valen, col_sofi = st.columns([2, 1, 1, 1, 1])
-
 # URL pública para la imagen predeterminada
 default_image_url = "https://via.placeholder.com/50"
 
-# Diccionario temporal para asignar los mensajes a usuarios
-asignaciones_temp = {usuario: [] for usuario in usuarios}
+# Función para mostrar la columna de un usuario
+def mostrar_usuario(usuario):
+    st.subheader(f"Solapa de {usuario}")
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    
+    with col1:
+        st.subheader("Ingreso Nuevo")
+        for mensaje in asignaciones[usuario]:
+            st.image(default_image_url, width=50)
+            st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
+            st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+    
+    with col2:
+        st.subheader("En Charla")
+    
+    with col3:
+        st.subheader("Agregando Productos")
+    
+    with col4:
+        st.subheader("Cliente Con Pedido Esperando Pago")
+    
+    with col5:
+        st.subheader("Pedido Enviado")
+    
+    with col6:
+        st.subheader("SandBox")
 
-# Mostrar mensajes en la "Pileta"
-with col_pileta:
-    st.subheader("Pileta")
-    for idx, mensaje in enumerate(mensajes):
-        # Mostrar imagen de perfil desde URL predeterminada
-        st.image(default_image_url, width=50)
-        
-        # Mostrar número o nombre
-        if 'nombre' in mensaje:
-            st.markdown(f"**{mensaje['nombre']}**")
-        else:
-            st.markdown(f"**{mensaje['numero']}**")
-        
-        # Mostrar mensaje (si no es multimedia)
-        if not mensaje.get('esMedia', False):
-            st.markdown(mensaje['mensaje'])
-        
-        # Seleccionar a qué usuario asignar el mensaje
-        usuario_asignado = st.selectbox('Asignar a:', usuarios, key=f"usuario_{idx}")
+# Interfaz de la "pileta" principal
+if st.session_state.view == 'pileta':
+    st.header("Pileta de Mensajes")
 
-        # Botón para mover el mensaje a la columna del usuario seleccionado
-        if st.button(f"Asignar {mensaje['numero']}", key=f"asignar_{idx}"):
-            asignaciones_temp[usuario_asignado].append(mensaje)
-            st.success(f"Mensaje asignado a {usuario_asignado}")
+    col_pileta, col_marian, col_emily, col_valen, col_sofi = st.columns([2, 1, 1, 1, 1])
 
-# Mostrar los mensajes asignados a Marian
-with col_marian:
-    st.subheader("Marian")
-    for mensaje in asignaciones_temp['Marian']:
-        st.image(default_image_url, width=50)
-        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
-        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+    # Mostrar mensajes en la "Pileta"
+    with col_pileta:
+        st.subheader("Pileta")
+        for idx, mensaje in enumerate(mensajes):
+            # Mostrar imagen de perfil desde URL predeterminada
+            st.image(default_image_url, width=50)
+            
+            # Mostrar número o nombre
+            if 'nombre' in mensaje:
+                st.markdown(f"**{mensaje['nombre']}**")
+            else:
+                st.markdown(f"**{mensaje['numero']}**")
+            
+            # Mostrar mensaje (si no es multimedia)
+            if not mensaje.get('esMedia', False):
+                st.markdown(mensaje['mensaje'])
+            
+            # Seleccionar a qué usuario asignar el mensaje
+            usuario_asignado = st.selectbox('Asignar a:', usuarios, key=f"usuario_{idx}")
 
-# Mostrar los mensajes asignados a Emily
-with col_emily:
-    st.subheader("Emily")
-    for mensaje in asignaciones_temp['Emily']:
-        st.image(default_image_url, width=50)
-        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
-        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+            # Botón para mover el mensaje a la columna del usuario seleccionado
+            if st.button(f"Asignar {mensaje['numero']}", key=f"asignar_{idx}"):
+                asignaciones[usuario_asignado].append(mensaje)
+                st.success(f"Mensaje asignado a {usuario_asignado}")
 
-# Mostrar los mensajes asignados a Valen
-with col_valen:
-    st.subheader("Valen")
-    for mensaje in asignaciones_temp['Valen']:
-        st.image(default_image_url, width=50)
-        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
-        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+    # Botones para cambiar de vista a las solapas de cada usuario
+    with col_marian:
+        if st.button("Marian"):
+            st.session_state.view = 'Marian'
 
-# Mostrar los mensajes asignados a Sofi
-with col_sofi:
-    st.subheader("Sofi")
-    for mensaje in asignaciones_temp['Sofi']:
-        st.image(default_image_url, width=50)
-        st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
-        st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
+    with col_emily:
+        if st.button("Emily"):
+            st.session_state.view = 'Emily'
+
+    with col_valen:
+        if st.button("Valen"):
+            st.session_state.view = 'Valen'
+
+    with col_sofi:
+        if st.button("Sofi"):
+            st.session_state.view = 'Sofi'
+
+# Mostrar la solapa de Marian
+if st.session_state.view == 'Marian':
+    mostrar_usuario('Marian')
+    if st.button("Volver a la Pileta"):
+        st.session_state.view = 'pileta'
+
+# Mostrar la solapa de Emily
+if st.session_state.view == 'Emily':
+    mostrar_usuario('Emily')
+    if st.button("Volver a la Pileta"):
+        st.session_state.view = 'pileta'
+
+# Mostrar la solapa de Valen
+if st.session_state.view == 'Valen':
+    mostrar_usuario('Valen')
+    if st.button("Volver a la Pileta"):
+        st.session_state.view = 'pileta'
+
+# Mostrar la solapa de Sofi
+if st.session_state.view == 'Sofi':
+    mostrar_usuario('Sofi')
+    if st.button("Volver a la Pileta"):
+        st.session_state.view = 'pileta'
