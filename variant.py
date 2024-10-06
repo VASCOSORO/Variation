@@ -1,10 +1,9 @@
 import streamlit as st
 import requests
 from PIL import Image
-import io
 
 # URL de la API de Node.js expuesta por ngrok
-API_URL = "https://<subdominio>.ngrok.io"  # Reemplazá <subdominio> con tu URL de ngrok
+API_URL = "https://839c-186-128-183-44.ngrok-free.app"  # Reemplazá con la URL pública de ngrok
 
 st.title('CRM - Batibot')
 
