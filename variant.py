@@ -1,34 +1,38 @@
+import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
-import streamlit as st
 import time
 
-# Función para enviar un mensaje a través de WhatsApp Web usando Selenium
-def enviar_mensaje(contacto, mensaje):
-    # Configurar opciones de Chrome
-    chrome_options = Options()
-    chrome_options.add_argument("--start-maximized")  # Maximiza la ventana del navegador
+# Lista de clientes inicial (simulación de una base de datos simple)
+clientes = [
+    {"nombre": "Juan Pérez", "telefono": "+5491112345678", "email": "juan@example.com"},
+    {"nombre": "Ana Gómez", "telefono": "+5491122334455", "email": "ana@example.com"},
+]
 
-    # Configuramos el servicio de ChromeDriver con webdriver_manager
+# Función para iniciar WhatsApp Web y enviar mensaje
+def enviar_mensaje(contacto, mensaje):
+    chrome_options = Options()
+    chrome_options.add_argument("--start-maximized")
+
+    # Configurar el servicio de ChromeDriver
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # Acceder a WhatsApp Web
     driver.get('https://web.whatsapp.com')
 
-    # Esperamos a que el usuario escanee el código QR
-    st.info("Escanea el código QR de WhatsApp Web y espera a que se conecte.")
+    # Esperar a que el usuario escanee el código QR
+    st.info("Escanea el código QR de WhatsApp Web.")
     while True:
         try:
-            # Comprobar si la sesión de WhatsApp ha sido iniciada correctamente
-            driver.find_element(By.XPATH, '//div[@id="side"]')
+            driver.find_element(By.XPATH, '//div[@id="side"]')  # Detecta si la sesión está iniciada
             st.success("Sesión de WhatsApp conectada.")
             break
         except:
-            time.sleep(2)  # Esperar antes de volver a comprobar si se ha iniciado la sesión
+            time.sleep(2)  # Espera antes de volver a verificar
 
     # Buscar el contacto en WhatsApp
     search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
@@ -36,30 +40,40 @@ def enviar_mensaje(contacto, mensaje):
     search_box.send_keys(contacto)
     search_box.send_keys(Keys.ENTER)
 
-    # Esperamos un poco para que cargue el chat
-    time.sleep(2)
-
     # Enviar el mensaje
+    time.sleep(2)
     message_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="6"]')
     message_box.click()
     message_box.send_keys(mensaje)
     message_box.send_keys(Keys.ENTER)
 
-    # Esperamos y cerramos el navegador
+    # Cerrar el navegador
     time.sleep(2)
     driver.quit()
 
-# Interfaz de usuario en Streamlit
-st.title("Automatización de WhatsApp con Selenium")
+# Interfaz principal del CRM
+st.title("CRM de Clientes con WhatsApp")
 
-# Campos para ingresar el contacto y el mensaje
-contacto = st.text_input("Nombre del contacto o número (incluye el código de país):")
-mensaje = st.text_area("Mensaje a enviar:")
+# Mostrar lista de clientes
+st.subheader("Lista de clientes")
+for cliente in clientes:
+    st.write(f"Nombre: {cliente['nombre']}")
+    st.write(f"Teléfono: {cliente['telefono']}")
+    st.write(f"Email: {cliente['email']}")
+    if st.button(f"Enviar mensaje a {cliente['nombre']}"):
+        mensaje = st.text_area(f"Escribí el mensaje para {cliente['nombre']}")
+        if st.button("Enviar mensaje"):
+            enviar_mensaje(cliente['telefono'], mensaje)
 
-# Botón para enviar el mensaje
-if st.button("Enviar mensaje"):
-    if contacto and mensaje:
-        enviar_mensaje(contacto, mensaje)
-        st.success(f"Mensaje enviado a {contacto}")
-    else:
-        st.error("Por favor, completá los campos de contacto y mensaje.")
+# Agregar un nuevo cliente
+st.subheader("Agregar nuevo cliente")
+with st.form(key="form_nuevo_cliente"):
+    nuevo_nombre = st.text_input("Nombre")
+    nuevo_telefono = st.text_input("Teléfono")
+    nuevo_email = st.text_input("Email")
+    submit_button = st.form_submit_button("Agregar cliente")
+
+    if submit_button:
+        nuevo_cliente = {"nombre": nuevo_nombre, "telefono": nuevo_telefono, "email": nuevo_email}
+        clientes.append(nuevo_cliente)
+        st.success(f"Cliente {nuevo_nombre} agregado con éxito.")
