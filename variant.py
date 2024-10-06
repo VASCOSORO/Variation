@@ -18,6 +18,9 @@ if 'view' not in st.session_state:
 if 'chat_abierto' not in st.session_state:
     st.session_state.chat_abierto = False
 
+if 'solapa_seleccionada' not in st.session_state:
+    st.session_state.solapa_seleccionada = None
+
 # Lista de mensajes en la "Pileta"
 if 'mensajes_pileta' not in st.session_state:
     st.session_state.mensajes_pileta = []
@@ -122,43 +125,26 @@ if st.session_state.view == 'pileta':
                 st.session_state.mensajes_pileta.pop(idx)
                 st.success(f"Mensaje asignado a {usuario_asignado}")
 
-    # Botones para cambiar de vista a las solapas de cada usuario
+    # Botones para seleccionar la solapa de cada asesora
     with col_marian:
         if st.button("Marian"):
-            st.session_state.view = 'Marian'
+            st.session_state.solapa_seleccionada = 'Marian'
 
     with col_emily:
         if st.button("Emily"):
-            st.session_state.view = 'Emily'
+            st.session_state.solapa_seleccionada = 'Emily'
 
     with col_valen:
         if st.button("Valen"):
-            st.session_state.view = 'Valen'
+            st.session_state.solapa_seleccionada = 'Valen'
 
     with col_sofi:
         if st.button("Sofi"):
-            st.session_state.view = 'Sofi'
+            st.session_state.solapa_seleccionada = 'Sofi'
 
-# Mostrar solapas
-if st.session_state.view == 'Marian':
-    mostrar_usuario('Marian')
-    if st.button("Volver a la Pileta"):
-        st.session_state.view = 'pileta'
-
-if st.session_state.view == 'Emily':
-    mostrar_usuario('Emily')
-    if st.button("Volver a la Pileta"):
-        st.session_state.view = 'pileta'
-
-if st.session_state.view == 'Valen':
-    mostrar_usuario('Valen')
-    if st.button("Volver a la Pileta"):
-        st.session_state.view = 'pileta'
-
-if st.session_state.view == 'Sofi':
-    mostrar_usuario('Sofi')
-    if st.button("Volver a la Pileta"):
-        st.session_state.view = 'pileta'
+# Mostrar la solapa seleccionada
+if st.session_state.solapa_seleccionada:
+    mostrar_usuario(st.session_state.solapa_seleccionada)
 
 # Mostrar el chat
 if st.session_state.view == 'chat':
