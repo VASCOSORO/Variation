@@ -29,40 +29,40 @@ default_image_url = "https://via.placeholder.com/50"
 
 # Definir los colores asignados a cada usuario
 colores_usuarios = {
-    'Marian': '#FFDDC1',
-    'Emily': '#C1FFD7',
-    'Valen': '#C1E1FF',
-    'Sofi': '#FFC1E1'
+    'Marian': '#FF5733',  # Naranja vibrante
+    'Emily': '#33FF57',   # Verde vibrante
+    'Valen': '#3357FF',   # Azul vibrante
+    'Sofi': '#FF33A6'     # Rosa vibrante
 }
 
-# Función para mostrar la columna de un usuario con color
+# Función para mostrar la columna de un usuario con color y más vida
 def mostrar_usuario(usuario):
-    st.markdown(f"<div style='background-color:{colores_usuarios[usuario]}; padding: 10px; border-radius: 10px;'>", unsafe_allow_html=True)
-    st.subheader(f"Solapa de {usuario}", anchor=f"solapa_{usuario}")
+    st.markdown(f"<div style='background-color:{colores_usuarios[usuario]}; padding: 20px; border-radius: 10px;'>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color:white;'>Solapa de {usuario}</h2>", unsafe_allow_html=True)
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     
     # Reducir el tamaño de los títulos de las columnas
     with col1:
-        st.markdown("### Ingreso Nuevo")
+        st.markdown("<h3 style='color:white;'>Ingreso Nuevo</h3>", unsafe_allow_html=True)
         for mensaje in asignaciones[usuario]:
             st.image(default_image_url, width=50)
             st.markdown(f"**{mensaje['nombre'] if 'nombre' in mensaje else mensaje['numero']}**")
             st.markdown(mensaje['mensaje'] if not mensaje.get('esMedia', False) else "Archivo multimedia recibido")
     
     with col2:
-        st.markdown("### En Charla")
+        st.markdown("<h3 style='color:white;'>En Charla</h3>", unsafe_allow_html=True)
     
     with col3:
-        st.markdown("### Agregando Productos")
+        st.markdown("<h3 style='color:white;'>Agregando Productos</h3>", unsafe_allow_html=True)
     
     with col4:
-        st.markdown("### Cliente Con Pedido Esperando Pago")
+        st.markdown("<h3 style='color:white;'>Cliente Esperando Pago</h3>", unsafe_allow_html=True)
     
     with col5:
-        st.markdown("### Pedido Enviado")
+        st.markdown("<h3 style='color:white;'>Pedido Enviado</h3>", unsafe_allow_html=True)
     
     with col6:
-        st.markdown("### SandBox")
+        st.markdown("<h3 style='color:white;'>SandBox</h3>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
