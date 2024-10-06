@@ -27,14 +27,6 @@ except Exception as e:
 # URL pública para la imagen predeterminada
 default_image_url = "https://via.placeholder.com/50"
 
-# Definir los colores asignados a cada usuario
-colores_usuarios = {
-    'Marian': '#FF5733',  # Naranja vibrante
-    'Emily': '#33FF57',   # Verde vibrante
-    'Valen': '#3357FF',   # Azul vibrante
-    'Sofi': '#FF33A6'     # Rosa vibrante
-}
-
 # Función para mostrar la columna de un usuario con color y más vida
 def mostrar_usuario(usuario):
     st.markdown(f"<div style='background-color:{colores_usuarios[usuario]}; padding: 20px; border-radius: 10px;'>", unsafe_allow_html=True)
@@ -76,23 +68,19 @@ if st.session_state.view == 'pileta':
     with col_pileta:
         st.subheader("Pileta")
         for idx, mensaje in enumerate(mensajes):
-            # Mostrar imagen de perfil desde URL predeterminada
-            st.image(default_image_url, width=50)
-            
-            # Mostrar número o nombre
-            if 'nombre' in mensaje:
-                st.markdown(f"**{mensaje['nombre']}**")
-            else:
-                st.markdown(f"**{mensaje['numero']}**")
-            
-            # Mostrar mensaje (si no es multimedia)
-            if not mensaje.get('esMedia', False):
-                st.markdown(mensaje['mensaje'])
-            
-            # Seleccionar a qué usuario asignar el mensaje
-            usuario_asignado = st.selectbox('Asignar a:', usuarios, key=f"usuario_{idx}")
+            row1, row2 = st.columns([1, 2])  # Ajustar las columnas de imagen y desplegable
 
-            # Botón para mover el mensaje a la columna del usuario seleccionado
+            # Columna 1: Imagen y número
+            with row1:
+                st.image(default_image_url, width=50)
+                st.markdown(f"**{mensaje['numero']}**")
+
+            # Columna 2: Mensaje y desplegable de asignación
+            with row2:
+                st.markdown(f"**{mensaje['mensaje']}**")
+                usuario_asignado = st.selectbox('Asignar a:', usuarios, key=f"usuario_{idx}")
+
+            # Botón de asignar, centrado
             if st.button(f"Asignar {mensaje['numero']}", key=f"asignar_{idx}"):
                 asignaciones[usuario_asignado].append(mensaje)
                 st.success(f"Mensaje asignado a {usuario_asignado}")
