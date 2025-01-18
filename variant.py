@@ -4,6 +4,7 @@ import time
 import random
 import urllib.parse
 
+# Ocho sectores de la rueda
 WHEEL_SECTORS = [
     {"label": "5% Descuento",       "color": "#FF5733"},
     {"label": "7% Descuento",       "color": "#FFC300"},
@@ -17,18 +18,16 @@ WHEEL_SECTORS = [
 
 def generar_ruleta_html(angle):
     """
-    Genera el bloque HTML/CSS de la ruleta, con 'clip-path' para
-    que cada slice sea una cuña y no un cuadrado.
-    angle: grados totales de rotación de la rueda.
+    Genera el HTML/CSS de la ruleta usando clip-path para cuñas,
+    y un 'angle' de rotación que define el giro final.
     """
     slices_html = []
     for i, sec in enumerate(WHEEL_SECTORS):
         deg_start = i * 45
-        # Cada "slice" abarca un wedge de 45°
+        # Cada cuña abarca 45° del círculo
         slice_html = f"""
         <div class="slice slice-{i}" 
-             style="background-color:{sec['color']};
-                    transform: rotate({deg_start}deg);">
+             style="background-color:{sec['color']}; transform: rotate({deg_start}deg);">
             <div class="slice-text">{sec['label']}</div>
         </div>
         """
@@ -36,7 +35,7 @@ def generar_ruleta_html(angle):
 
     slices_joined = "\n".join(slices_html)
 
-    # CSS con clip-path para que cada rectángulo sea una cuña
+    # CSS: clip-path para cada slice, texto alineado al borde
     html_code = f"""
     <style>
     .ruleta-container {{
@@ -62,37 +61,44 @@ def generar_ruleta_html(angle):
         border-radius: 50%;
         border: 6px solid #333;
         position: relative;
-        /* rotamos la rueda */
+        /* Ajustá "4s" si querés el giro más o menos largo */
+        transition: all 4s cubic-bezier(0.25, 0.1, 0.25, 1);
         transform: rotate({angle}deg);
-        transition: all 3s cubic-bezier(0.25, 0.1, 0.25, 1);
         overflow: hidden;
     }}
-    /* Cada porción (slice) es 100% de la rueda, 
-       y se recorta con clip-path en forma de cuña de 45°. */
+
+    /* Clip-path para cuña de 45°,
+       con su rotación propia. */
     .slice {{
         width: 100%;
         height: 100%;
         position: absolute;
         top: 0;
         left: 0;
-        /* Para que sea una "rebanada" de 45° del círculo */
         clip-path: polygon(50% 50%, 100% 0%, 100% 100%);
-        /* Ubicada según su rotación (rotate(N*45deg)) */
         transform-origin: 50% 50%;
     }}
+
     .slice-text {{
-        /* giramos en contra para que el texto quede horizontal */
+        /* Giramos en contra la mitad de 45°, o sea 22.5°, para que el texto 
+           quede más o menos horizontal */
         transform: rotate(-22.5deg);
         transform-origin: center center;
+        
+        /* Ubicación */
         position: absolute;
-        top: 20%;
-        left: 50%;
-        width: 80px;
+        top: 0;
+        left: 50%; 
+        /* movemos un poco hacia afuera */
         margin-left: -40px; 
+        margin-top: 10px; 
+
+        width: 80px;
         text-align: center;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         color: #fff;
         font-weight: bold;
+        pointer-events: none; 
     }}
     </style>
 
@@ -106,10 +112,12 @@ def generar_ruleta_html(angle):
     return html_code
 
 def lanzar_emojis_tristes():
+    """Muestra emojis de tristeza en caso de perder."""
     for _ in range(5):
         st.markdown("😢😢😢", unsafe_allow_html=True)
 
 def canjear_por_whatsapp(label):
+    """Muestra link a WhatsApp para canjear premio con Joni."""
     telefono_joni = "5491144042904"
     mensaje = f"Hola Joni, gané un {label} en la Ruleta y quiero canjear mi premio."
     msg_enc = urllib.parse.quote(mensaje)
@@ -117,15 +125,16 @@ def canjear_por_whatsapp(label):
     st.markdown(f"[Canjear ahora por WhatsApp]({wsp_url})", unsafe_allow_html=True)
 
 def modulo_ruleta():
-    st.title("🎡 Ruleta Animada (con clip-path)")
-    st.write("¡Probá tu suerte con una ruleta más realista (cuñas en vez de cuadrados)!")
+    st.title("🎡 Ruleta con Clip-Path (5 vueltas)")
+    st.write("¡Probá tu suerte con esta ruleta! Se ve el giro y los premios en los bordes.")
 
+    # Guardamos en session_state el ángulo y resultado
     if "ruleta_angle" not in st.session_state:
         st.session_state.ruleta_angle = 0
     if "ruleta_result" not in st.session_state:
         st.session_state.ruleta_result = None
 
-    # Estilo botón
+    # Estilo del botón
     st.markdown("""
     <style>
     div.stButton > button {
@@ -144,22 +153,25 @@ def modulo_ruleta():
     </style>
     """, unsafe_allow_html=True)
 
+    # Botón para girar
     if st.button("¡Tirar la Ruleta!"):
+        # Elegimos índice 0..7
         chosen_index = random.randint(0, 7)
+        # 5 vueltas = 1800°, + chosen_index * 45°, + offset extra
         offset = random.randint(0, 44)
-        final_angle = 1080 + (chosen_index * 45) + offset
+        final_angle = 1800 + (chosen_index * 45) + offset
 
         st.session_state.ruleta_angle = final_angle
         st.session_state.ruleta_result = WHEEL_SECTORS[chosen_index]["label"]
 
         with st.spinner("Girando la ruleta..."):
-            time.sleep(3)
+            time.sleep(4)  # coincide con 4s del CSS
 
     # Generamos HTML y lo embebemos como componente
     ruleta_html = generar_ruleta_html(st.session_state.ruleta_angle)
-    st.components.v1.html(ruleta_html, height=400, scrolling=False)
+    components.html(ruleta_html, height=400, scrolling=False)
 
-    # Resultado
+    # Mostrar resultado
     if st.session_state.ruleta_result:
         res = st.session_state.ruleta_result
         if "Sin premio" in res:
@@ -170,6 +182,7 @@ def modulo_ruleta():
             st.success(f"¡Felicidades! Te tocó: {res}")
             canjear_por_whatsapp(res)
 
+# Para correr directo
 if __name__ == "__main__":
     st.set_page_config(page_title="Ruleta con Clip-Path", layout="centered")
     modulo_ruleta()
