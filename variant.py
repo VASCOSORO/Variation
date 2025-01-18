@@ -17,8 +17,7 @@ def modulo_ruleta():
         "Sin premio"
     ]
 
-    # Porciones asociadas (podés ajustar para cambiar probabilidades)
-    # Si querés que tengan igual probabilidad, usá todos 1.
+    # Porciones asociadas (para probabilidades)
     valores = [1, 1, 1, 1, 1, 1, 1, 1]
 
     # Colores de cada porción
@@ -35,7 +34,7 @@ def modulo_ruleta():
 
     st.subheader("¡Girá la ruleta y probá tu suerte!")
     
-    # Mostramos la ruleta (gráfico de torta de Plotly)
+    # Mostramos la ruleta con un gráfico de torta (Plotly)
     fig = go.Figure(
         data=[go.Pie(
             labels=opciones, 
@@ -50,14 +49,15 @@ def modulo_ruleta():
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    # Botón Rojo "Tirar"
-    boton_tirar = st.button("TIRAR!", help="¡Probar suerte!", 
-                            key="boton_tirar", 
-                            # Un poco de CSS para que se vea rojo:
-                            on_click=None)
+    # Botón rojo "TIRAR!"
+    boton_tirar = st.button(
+        "TIRAR!", 
+        help="¡Probar suerte!",
+        key="boton_tirar"
+    )
 
+    # Lógica al pulsar el botón
     if boton_tirar:
-        # Elegimos un resultado random
         resultado = random.choices(opciones, weights=valores, k=1)[0]
         
         if resultado == "Sin premio":
@@ -65,7 +65,6 @@ def modulo_ruleta():
         else:
             st.success(f"¡Felicitaciones! Obtuviste: **{resultado}**")
 
-# Si querés que se ejecute directamente al correr con streamlit:
 if __name__ == "__main__":
     st.set_page_config(page_title="Ruleta de Premios", layout="centered")
     modulo_ruleta()
