@@ -4,51 +4,55 @@ import time
 import random
 import urllib.parse
 
-# Ajustá acá los nombres exactos de tus PNG
+# Ocho sectores, todos con color "#47a8bd" y las imágenes renombradas
 WHEEL_SECTORS = [
     {
         "label": "5% Descuento",
         "color": "#47a8bd",
-        "icon": "./vasco.png"
+        "icon": "vasco_0.png"  # correspondía a "vasco.png"
     },
     {
         "label": "7% Descuento",
         "color": "#47a8bd",
-        "icon": "./vasco (1).png"
+        "icon": "vasco_1.png"  # correspondía a "vasco (1).png"
     },
     {
         "label": "Ganaste un Peluche",
         "color": "#47a8bd",
-        "icon": "./vasco (2).png"
+        "icon": "vasco_2.png"  # correspondía a "vasco (2).png"
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "./vasco (3).png"
+        "icon": "vasco_3.png"  # correspondía a "vasco (3).png" (fantasma)
     },
     {
         "label": "Ganaste un Juguete",
         "color": "#47a8bd",
-        "icon": "./vasco (4).png"
+        "icon": "vasco_4.png"  # correspondía a "vasco (4).png"
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "./vasco (3).png"
+        "icon": "vasco_3.png"  # fantasma
     },
     {
         "label": "12% Descuento",
         "color": "#47a8bd",
-        "icon": "./vasco (1).png"
+        "icon": "vasco_1.png"
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "./vasco (3).png"
+        "icon": "vasco_3.png"
     },
 ]
 
 def generar_ruleta_html(angle):
+    """
+    Genera el HTML/CSS de la ruleta con clip-path y tus 5 imágenes renombradas.
+    'angle' = rotación acumulada en grados.
+    """
     slices_html = []
     for i, sec in enumerate(WHEEL_SECTORS):
         deg_start = i * 45
@@ -80,7 +84,7 @@ def generar_ruleta_html(angle):
         border-right: 25px solid transparent;
         border-bottom: 40px solid #ff006e;
         position: absolute;
-        top: -55px; 
+        top: -55px;
         left: calc(50% - 25px);
         z-index: 999;
     }}
@@ -100,6 +104,7 @@ def generar_ruleta_html(angle):
         position: absolute;
         top: 0;
         left: 0;
+        /* "rebanada" de 45° con clip-path */
         clip-path: polygon(50% 50%, 100% 0%, 100% 100%);
         transform-origin: 50% 50%;
     }}
@@ -111,7 +116,7 @@ def generar_ruleta_html(angle):
         transform-origin: center center;
         width: 80px;
         margin-left: -40px;
-        margin-top: 20px; 
+        margin-top: 20px;
         text-align: center;
     }}
     .slice-icon {{
@@ -144,8 +149,7 @@ def canjear_por_whatsapp(label):
 
 def modulo_ruleta():
     st.title("Girá la Ruleta y Participá de Lindos Premios")
-
-    st.write("¡Dale clic al botón para ver si ganás un juguete, un descuento o nada!")
+    st.write("¡Hacé clic, mirá el giro, y descubrí si ganaste!")
 
     # Ángulo acumulado
     if "ruleta_angle" not in st.session_state:
@@ -153,7 +157,7 @@ def modulo_ruleta():
     if "ruleta_result" not in st.session_state:
         st.session_state.ruleta_result = None
 
-    # Botón
+    # Estilo botón
     st.markdown("""
     <style>
     div.stButton > button {
@@ -169,28 +173,22 @@ def modulo_ruleta():
         background-color: #b00046;
         color: #eee;
     }
-    .msg-ruleta {
-        text-align: center;
-        font-size: 1.3rem;
-        color: #ff006e;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-    }
     </style>
     """, unsafe_allow_html=True)
 
-    clicked = st.button("¡Tirar la Ruleta!")
-    if clicked:
-        # Mostramos un mensaje grande en la app
-        st.markdown("<div class='msg-ruleta'>Girando la Ruleta...</div>", unsafe_allow_html=True)
-        # Elegimos sector
+    if st.button("¡Tirar la Ruleta!"):
         chosen_index = random.randint(0, 7)
+        # 5 vueltas (1800°) + sector * 45° + offset
         offset = random.randint(0, 44)
         final_angle = st.session_state.ruleta_angle + 1800 + (chosen_index * 45) + offset
+
         st.session_state.ruleta_angle = final_angle
         st.session_state.ruleta_result = WHEEL_SECTORS[chosen_index]["label"]
-        time.sleep(4)  # coincidimos con la transición
 
+        with st.spinner("Girando la Ruleta..."):
+            time.sleep(4)  # coincide con la transición
+
+    # Generamos el HTML
     ruleta_html = generar_ruleta_html(st.session_state.ruleta_angle)
     components.html(ruleta_html, height=450, scrolling=False)
 
@@ -198,12 +196,12 @@ def modulo_ruleta():
     if st.session_state.ruleta_result:
         res = st.session_state.ruleta_result
         if "Sin premio" in res:
-            st.warning("¡No ganaste nada! Dale otra vez.")
+            st.warning("¡No ganaste nada! Probá de nuevo.")
         else:
             st.balloons()
             st.success(f"¡Felicidades! Te tocó: {res}")
             canjear_por_whatsapp(res)
 
 if __name__ == "__main__":
-    st.set_page_config(page_title="Ruleta con PNG locales", layout="centered")
+    st.set_page_config(page_title="Ruleta con vasco_*.png", layout="centered")
     modulo_ruleta()
