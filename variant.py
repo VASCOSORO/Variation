@@ -4,61 +4,56 @@ import time
 import random
 import urllib.parse
 
-# Ocho sectores; uso tus 5 imágenes repitiéndolas en algunos sectores.
-# Ajustá los 'label' y la lógica "Sin premio" como quieras.
+# Ajustá acá los nombres exactos de tus PNG
 WHEEL_SECTORS = [
     {
         "label": "5% Descuento",
         "color": "#47a8bd",
-        "icon": "vasco_0.png"  # la seta roja
+        "icon": "./vasco.png"
     },
     {
         "label": "7% Descuento",
         "color": "#47a8bd",
-        "icon": "vasco_1.png"  # la estrella
+        "icon": "./vasco (1).png"
     },
     {
         "label": "Ganaste un Peluche",
         "color": "#47a8bd",
-        "icon": "vasco_2.png"  # la seta con cara
+        "icon": "./vasco (2).png"
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "vasco_3.png"  # el fantasmita
+        "icon": "./vasco (3).png"
     },
     {
         "label": "Ganaste un Juguete",
         "color": "#47a8bd",
-        "icon": "vasco_4.png"  # la bolsita con diamante
+        "icon": "./vasco (4).png"
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "vasco_2.png"  # repetimos fantasma
+        "icon": "./vasco (3).png"
     },
     {
         "label": "12% Descuento",
         "color": "#47a8bd",
-        "icon": "vasco_0.png"  # repetimos estrella
+        "icon": "./vasco (1).png"
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "vasco_2.png"  # repetimos fantasma
+        "icon": "./vasco (3).png"
     },
 ]
 
 def generar_ruleta_html(angle):
-    """
-    Genera el HTML/CSS de la ruleta, usando clip-path, con un ícono local para cada sector.
-    'angle' es la rotación acumulada en grados.
-    """
     slices_html = []
     for i, sec in enumerate(WHEEL_SECTORS):
-        deg_start = i * 45  # cada sector abarca 45°
+        deg_start = i * 45
         slice_html = f"""
-        <div class="slice slice-{i}" 
+        <div class="slice slice-{i}"
              style="background-color:{sec['color']}; transform: rotate({deg_start}deg);">
             <div class="slice-content">
                 <img src="{sec['icon']}" class="slice-icon" alt="{sec['label']}"/>
@@ -95,7 +90,6 @@ def generar_ruleta_html(angle):
         border-radius: 50%;
         border: 6px solid #333;
         position: relative;
-        /* 4s para notar el giro */
         transition: all 4s cubic-bezier(0.25, 0.1, 0.25, 1);
         transform: rotate({angle}deg);
         overflow: hidden;
@@ -109,12 +103,11 @@ def generar_ruleta_html(angle):
         clip-path: polygon(50% 50%, 100% 0%, 100% 100%);
         transform-origin: 50% 50%;
     }}
-    /* Contenido de cada slice: el icono y su label */
     .slice-content {{
         position: absolute;
         top: 0;
         left: 50%;
-        transform: rotate(-22.5deg); /* compensa la rotación de la slice */
+        transform: rotate(-22.5deg);
         transform-origin: center center;
         width: 80px;
         margin-left: -40px;
@@ -143,9 +136,6 @@ def generar_ruleta_html(angle):
     return html_code
 
 def canjear_por_whatsapp(label):
-    """
-    Link a WhatsApp para canjear el premio con Joni.
-    """
     telefono_joni = "5491144042904"
     mensaje = f"Hola Joni, gané un {label} en la Ruleta y quiero canjear mi premio."
     msg_encoded = urllib.parse.quote(mensaje)
@@ -153,16 +143,17 @@ def canjear_por_whatsapp(label):
     st.markdown(f"[Canjear ahora por WhatsApp]({wsp_url})", unsafe_allow_html=True)
 
 def modulo_ruleta():
-    st.title("Ruleta Estilo Mario con tus Iconos Locales")
-    st.write("Giramos 5 vueltas cada tirada. Las imágenes .png están subidas en tu repo.")
+    st.title("Girá la Ruleta y Participá de Lindos Premios")
 
-    # Ángulo acumulado (no se resetea) y resultado
+    st.write("¡Dale clic al botón para ver si ganás un juguete, un descuento o nada!")
+
+    # Ángulo acumulado
     if "ruleta_angle" not in st.session_state:
         st.session_state.ruleta_angle = 0
     if "ruleta_result" not in st.session_state:
         st.session_state.ruleta_result = None
 
-    # Estilo del botón
+    # Botón
     st.markdown("""
     <style>
     div.stButton > button {
@@ -178,26 +169,32 @@ def modulo_ruleta():
         background-color: #b00046;
         color: #eee;
     }
+    .msg-ruleta {
+        text-align: center;
+        font-size: 1.3rem;
+        color: #ff006e;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-    if st.button("¡Tirar la Ruleta!"):
+    clicked = st.button("¡Tirar la Ruleta!")
+    if clicked:
+        # Mostramos un mensaje grande en la app
+        st.markdown("<div class='msg-ruleta'>Girando la Ruleta...</div>", unsafe_allow_html=True)
+        # Elegimos sector
         chosen_index = random.randint(0, 7)
-        # 5 vueltas = 5*360=1800°, más el sector (chosen_index*45) y offset
         offset = random.randint(0, 44)
         final_angle = st.session_state.ruleta_angle + 1800 + (chosen_index * 45) + offset
-
         st.session_state.ruleta_angle = final_angle
         st.session_state.ruleta_result = WHEEL_SECTORS[chosen_index]["label"]
+        time.sleep(4)  # coincidimos con la transición
 
-        with st.spinner("Girando la ruleta..."):
-            time.sleep(4)
-
-    # Mostrar la ruleta con su ángulo actual
     ruleta_html = generar_ruleta_html(st.session_state.ruleta_angle)
     components.html(ruleta_html, height=450, scrolling=False)
 
-    # Mostrar resultado
+    # Resultado
     if st.session_state.ruleta_result:
         res = st.session_state.ruleta_result
         if "Sin premio" in res:
@@ -208,5 +205,5 @@ def modulo_ruleta():
             canjear_por_whatsapp(res)
 
 if __name__ == "__main__":
-    st.set_page_config(page_title="Ruleta Mario con Iconos", layout="centered")
+    st.set_page_config(page_title="Ruleta con PNG locales", layout="centered")
     modulo_ruleta()
