@@ -2,12 +2,13 @@ import streamlit as st
 import time
 import random
 import urllib.parse
+import os
 
 OPCIONES = [
-    {"nombre": "Sin premio 😢",        "file": "vasco_2.png"},
-    {"nombre": "Sin premio 😢",        "file": "vasco_3.png"},
-    {"nombre": "5% Descuento 🤩",     "file": "vasco_0.png"},
-    {"nombre": "7% Descuento 🤑",     "file": "vasco_1.png"},
+    {"nombre": "Sin premio 😢", "file": "vasco_2.png"},
+    {"nombre": "Sin premio 😢", "file": "vasco_3.png"},
+    {"nombre": "5% Descuento 🤩", "file": "vasco_0.png"},
+    {"nombre": "7% Descuento 🤑", "file": "vasco_1.png"},
     {"nombre": "Ganaste un Juguete 🧸🎉", "file": "vasco_4.png"},
 ]
 
@@ -21,7 +22,6 @@ def canjear_por_whatsapp(label):
 def main():
     st.set_page_config(page_title="Push The Button - Mundo Peluche", layout="wide")
 
-    # CSS para contenedor centrado y estilos
     st.markdown("""
     <style>
     .block-container {
@@ -42,7 +42,6 @@ def main():
         background-color: #92093a;
         color: #eee;
     }
-    /* Footer pequeño */
     .footer-vasco {
         font-size: 0.8rem;
         color: #888;
@@ -51,31 +50,27 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # Título + Subtítulo
     st.markdown("<h1>Push The Button</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='color:#ff006e;'>Mundo Peluche</h3>", unsafe_allow_html=True)
 
     st.markdown("Dale clic al botón y esperá unos segundos...")
 
+    # Debug: mostrar lista de archivos en el directorio actual
+    # (podés comentarlo si no querés ver esto)
+    st.write("Archivos en esta carpeta:", os.listdir("."))
+
     if "resultado" not in st.session_state:
         st.session_state.resultado = None
 
-    # Botón
     if st.button("¡Presioná aquí! 🚀"):
         with st.spinner("Girando… un momento por favor…"):
             time.sleep(2)
         elegido = random.choice(OPCIONES)
         st.session_state.resultado = elegido
 
-    # Mostrar resultado
     if st.session_state.resultado:
         r = st.session_state.resultado
-        # En lugar de st.image, usamos HTML para forzar centrado
-        st.markdown(
-            f"<img src='{r['file']}' alt='{r['nombre']}' style='display:block; margin:0 auto;' width='180'>",
-            unsafe_allow_html=True
-        )
-
+        st.image(r["file"], width=180)  # Muestra la imagen, centrada por el contenedor
         if "Sin premio" in r["nombre"]:
             st.warning("¡No ganaste nada! Intentalo de nuevo.")
         else:
@@ -83,7 +78,6 @@ def main():
             st.success(f"¡Felicidades! Te tocó: {r['nombre']}")
             canjear_por_whatsapp(r["nombre"])
 
-    # Footer
     st.markdown("<div class='footer-vasco'>powered by <strong>VASCO</strong></div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
