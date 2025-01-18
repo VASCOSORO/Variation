@@ -10,42 +10,42 @@ WHEEL_SECTORS = [
     {
         "label": "5% Descuento",
         "color": "#47a8bd",
-        "icon": "vasco.png"  # la seta roja
+        "icon": "vasco_0.png"  # la seta roja
     },
     {
         "label": "7% Descuento",
         "color": "#47a8bd",
-        "icon": "vasco(1).png"  # la estrella
+        "icon": "vasco_1.png"  # la estrella
     },
     {
         "label": "Ganaste un Peluche",
         "color": "#47a8bd",
-        "icon": "vasco(2).png"  # la seta con cara
+        "icon": "vasco_2.png"  # la seta con cara
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "vasco(3).png"  # el fantasmita
+        "icon": "vasco_3.png"  # el fantasmita
     },
     {
         "label": "Ganaste un Juguete",
         "color": "#47a8bd",
-        "icon": "vasco(4).png"  # la bolsita con diamante
+        "icon": "vasco_4.png"  # la bolsita con diamante
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "vasco(3).png"  # repetimos fantasma
+        "icon": "vasco_2.png"  # repetimos fantasma
     },
     {
         "label": "12% Descuento",
         "color": "#47a8bd",
-        "icon": "vasco(1).png"  # repetimos estrella
+        "icon": "vasco_0.png"  # repetimos estrella
     },
     {
         "label": "Sin premio",
         "color": "#47a8bd",
-        "icon": "vasco(3).png"  # repetimos fantasma
+        "icon": "vasco_2.png"  # repetimos fantasma
     },
 ]
 
