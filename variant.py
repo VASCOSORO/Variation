@@ -14,15 +14,14 @@ OPCIONES = [
 def canjear_por_whatsapp(label):
     telefono_joni = "5491144042904"
     mensaje = f"Hola Joni, gané {label} en la Ruleta y quiero canjear mi premio."
-    msg_encoded = urllib.parse.quote(mensaje)
-    wsp_url = f"https://api.whatsapp.com/send?phone={telefono_joni}&text={msg_encoded}"
+    wsp_text = urllib.parse.quote(mensaje)
+    wsp_url = f"https://api.whatsapp.com/send?phone={telefono_joni}&text={wsp_text}"
     st.markdown(f"[Canjear ahora por WhatsApp]({wsp_url})", unsafe_allow_html=True)
 
 def main():
-    # layout="wide" para poder centrar
     st.set_page_config(page_title="Push The Button - Mundo Peluche", layout="wide")
 
-    # CSS para contenedor centrado
+    # CSS contenedor 600px centrado
     st.markdown("""
     <style>
     .block-container {
@@ -51,7 +50,7 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # Títulos centrados
+    # Título y subtítulo
     st.markdown("<h1>Push The Button</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='color:#ff006e;'>Mundo Peluche</h3>", unsafe_allow_html=True)
 
@@ -67,11 +66,11 @@ def main():
         elegido = random.choice(OPCIONES)
         st.session_state.resultado = elegido
 
-    # Mostrar resultado
+    # Mostrar resultado si hay uno
     if st.session_state.resultado:
         r = st.session_state.resultado
 
-        # HTML: imagen arriba y texto debajo, ambos centrados
+        # Renderizamos imagen + label JUNTOS y centrados, sin texto extra
         st.markdown(f"""
         <div style="display:flex; flex-direction:column; align-items:center; margin:20px 0;">
             <img src="{r['file']}" alt="{r['nombre']}" style="width:180px; margin-bottom:10px;" />
@@ -79,12 +78,12 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-        # Luego los mensajes de premio o no
         if "Sin premio" in r["nombre"]:
             st.warning("¡No ganaste nada! Intentalo de nuevo.")
         else:
+            # Premio, sin repetir el label otra vez
             st.balloons()
-            st.success(f"¡Felicidades! Te tocó: {r['nombre']}")
+            st.success("¡Felicidades! Ganaste un premio.")
             canjear_por_whatsapp(r["nombre"])
 
     # Footer
