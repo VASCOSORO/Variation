@@ -42,8 +42,8 @@ def canjear_por_whatsapp(label):
 def main():
     st.set_page_config(page_title="Ruleta Simple", layout="centered")
 
-    st.title("🎉🤞 ¡Bienvenid@ a la Ruleta de la Suerte! 🤞🎉")
-    st.write("Dale clic al botón y esperá unos segundos para ver tu suerte…")
+    st.title("🎉🤞 ¡Bienvenid@ el Boton de la Suerte! 🤞🎉")
+    st.write("Dale clic al botón y esperá unos segundos para ver si ganaste…")
 
     if "resultado" not in st.session_state:
         st.session_state.resultado = None
