@@ -3,7 +3,7 @@ import time
 import random
 import urllib.parse
 
-# Definimos 5 opciones (2 sin premio y 3 con premio)
+# Definimos 5 opciones (2 sin premio, 3 con premio)
 OPCIONES = [
     # Sin premio
     {
@@ -31,7 +31,7 @@ OPCIONES = [
 
 def canjear_por_whatsapp(label):
     """
-    Link a WhatsApp para canjear el premio con Joni.
+    Muestra un link a WhatsApp para canjear el premio con Joni.
     """
     telefono_joni = "5491144042904"
     mensaje = f"Hola Joni, gané {label} en la Ruleta y quiero canjear mi premio."
@@ -40,18 +40,19 @@ def canjear_por_whatsapp(label):
     st.markdown(f"[Canjear ahora por WhatsApp]({wsp_url})", unsafe_allow_html=True)
 
 def main():
-    st.set_page_config(page_title="Ruleta Centrada", layout="centered")
+    st.set_page_config(page_title="Push The Button - Mundo Peluche", layout="centered")
 
-    # CSS para centrar todo el contenido
+    # CSS para centrar todo y definir estilos
     st.markdown("""
     <style>
-    /* Centrar todo en la página */
+    /* Centrar todo el contenido */
     main .block-container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        text-align: center;
     }
+    /* Botón */
     div.stButton > button {
         color: #fff;
         background-color: #d81b60;
@@ -65,6 +66,7 @@ def main():
         background-color: #92093a;
         color: #eee;
     }
+    /* Imagen de resultado */
     .resultado-img {
         display: block;
         margin: 1rem auto;
@@ -73,24 +75,27 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    st.title("🎉🤞 ¡Bienvenid@ a la Ruleta de la Suerte! 🤞🎉")
-    st.write("Dale clic al botón y esperá unos segundos para ver tu suerte…")
+    # Título y subtítulo centrados
+    st.markdown("<h1 style='text-align:center;'>Push The Button</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center; color:#ff006e;'>Mundo Peluche</h3>", unsafe_allow_html=True)
+
+    st.write("Dale clic al botón y esperá unos segundos...")
 
     if "resultado" not in st.session_state:
         st.session_state.resultado = None
 
-    # Botón para tirar
-    if st.button("¡Tirar la Ruleta! 🎁"):
-        with st.spinner("Girando la Ruleta… un momento por favor…"):
-            time.sleep(2)  # 2 segundos simulando giro
+    # Botón
+    if st.button("¡Presioná aquí! 🚀"):
+        with st.spinner("Girando… un momento por favor…"):
+            time.sleep(2)  # Simulamos 2s
         elegido = random.choice(OPCIONES)
         st.session_state.resultado = elegido
 
-    # Si ya tenemos un resultado, lo mostramos
+    # Mostrar resultado
     if st.session_state.resultado:
         r = st.session_state.resultado
+        # Mostrar imagen
         st.image(r["file"], caption="", width=180)
-        
         if "Sin premio" in r["nombre"]:
             st.warning("¡No ganaste nada! Intentalo de nuevo.")
         else:
