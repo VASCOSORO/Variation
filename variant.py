@@ -1,9 +1,9 @@
 import streamlit as st
+import streamlit.components.v1 as components  # <-- Importamos
 import time
 import random
 import urllib.parse
 
-# Definimos 8 sectores (podés cambiar nombres y colores)
 WHEEL_SECTORS = [
     {"label": "5% Descuento",       "color": "#FF5733"},
     {"label": "7% Descuento",       "color": "#FFC300"},
@@ -16,11 +16,6 @@ WHEEL_SECTORS = [
 ]
 
 def generar_ruleta_html(angle):
-    """
-    Genera el bloque HTML/CSS de la ruleta.
-    angle: cuantos grados la rueda está rotada (para simular giro).
-    """
-    # Armamos cada "slice" (45° c/u)
     slices_html = []
     for i, sec in enumerate(WHEEL_SECTORS):
         deg_start = i * 45
@@ -32,8 +27,6 @@ def generar_ruleta_html(angle):
         slices_html.append(slice_html)
 
     slices_joined = "\n".join(slices_html)
-
-    # Insertamos el CSS y HTML
     html_code = f"""
     <style>
     .ruleta-container {{
@@ -47,7 +40,7 @@ def generar_ruleta_html(angle):
         height: 0;
         border-left: 20px solid transparent;
         border-right: 20px solid transparent;
-        border-bottom: 30px solid #ff006e; /* color de la flecha */
+        border-bottom: 30px solid #ff006e;
         position: absolute;
         top: -40px;
         left: calc(50% - 20px);
@@ -59,7 +52,6 @@ def generar_ruleta_html(angle):
         border-radius: 50%;
         border: 6px solid #333;
         position: relative;
-        /* Rotación: se animará con transition */
         transform: rotate({angle}deg);
         transition: all 3s cubic-bezier(0.25, 0.1, 0.25, 1);
     }}
@@ -87,9 +79,7 @@ def generar_ruleta_html(angle):
     </style>
 
     <div class="ruleta-container">
-      <!-- flecha fija -->
       <div class="arrow"></div>
-      <!-- rueda que gira -->
       <div class="ruleta-wheel">
         {slices_joined}
       </div>
@@ -98,37 +88,25 @@ def generar_ruleta_html(angle):
     return html_code
 
 def lanzar_emojis_tristes():
-    """
-    Muestra emojis tristes usando st.markdown
-    """
     for _ in range(5):
         st.markdown("😢😢😢", unsafe_allow_html=True)
 
 def canjear_por_whatsapp(label):
-    """
-    Muestra link a WhatsApp para canjear el premio con Joni
-    """
-    telefono_joni = "5491144042904"  # Formato: sin + ni espacios
+    telefono_joni = "5491144042904"
     mensaje = f"Hola Joni, gané un {label} en la Ruleta y quiero canjear mi premio."
     mensaje_encode = urllib.parse.quote(mensaje)
     whatsapp_url = f"https://api.whatsapp.com/send?phone={telefono_joni}&text={mensaje_encode}"
-
-    st.markdown(
-        f"[Canjear ahora por WhatsApp]({whatsapp_url})",
-        unsafe_allow_html=True
-    )
+    st.markdown(f"[Canjear ahora por WhatsApp]({whatsapp_url})", unsafe_allow_html=True)
 
 def modulo_ruleta():
     st.title("🎡 Ruleta Animada: Descuentos y Premios")
     st.write("¡Probá tu suerte con esta ruleta visual más realista!")
 
-    # Usamos st.session_state para guardar ángulo y resultado
     if "ruleta_angle" not in st.session_state:
         st.session_state.ruleta_angle = 0
     if "ruleta_result" not in st.session_state:
         st.session_state.ruleta_result = None
 
-    # Botón con estilo
     st.markdown(
         """
         <style>
@@ -150,26 +128,22 @@ def modulo_ruleta():
         unsafe_allow_html=True
     )
 
-    # BOTÓN TIRAR
     if st.button("¡Tirar la Ruleta!"):
-        # Sorteamos uno de los 8 sectores
         chosen_index = random.randint(0, 7)
-        # Cada sector = 45°, hacemos 3 giros completos (1080°)
-        # y sumamos chosen_index*45 para caer en el sector, mas offset
-        offset = random.randint(0, 44)  # para no caer siempre en el borde exacto
+        offset = random.randint(0, 44)
         final_angle = 1080 + (chosen_index * 45) + offset
 
         st.session_state.ruleta_angle = final_angle
         st.session_state.ruleta_result = WHEEL_SECTORS[chosen_index]["label"]
 
         with st.spinner("Girando la ruleta..."):
-            time.sleep(3)  # simulamos 3 seg de giro
+            time.sleep(3)
 
-    # Mostramos la ruleta con el ángulo en session_state
+    # Generamos el HTML final de la ruleta
     ruleta_html = generar_ruleta_html(st.session_state.ruleta_angle)
-    st.markdown(ruleta_html, unsafe_allow_html=True)
+    # En vez de st.markdown, usamos st.components.v1.html:
+    components.html(ruleta_html, height=400, scrolling=False)  # height ajustable
 
-    # Si hay resultado
     if st.session_state.ruleta_result:
         resultado = st.session_state.ruleta_result
         if "Sin premio" in resultado:
