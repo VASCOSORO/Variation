@@ -4,12 +4,11 @@ import random
 import urllib.parse
 import os
 
-# Definimos las opciones (2 sin premio, 3 con premio)
 OPCIONES = [
-    {"nombre": "Sin premio 😢",        "file": "vasco_2.png"},
-    {"nombre": "Sin premio 😢",        "file": "vasco_3.png"},
-    {"nombre": "5% Descuento 🤩",     "file": "vasco_0.png"},
-    {"nombre": "7% Descuento 🤑",     "file": "vasco_1.png"},
+    {"nombre": "Sin premio 😢", "file": "vasco_2.png"},
+    {"nombre": "Sin premio 😢", "file": "vasco_3.png"},
+    {"nombre": "5% Descuento 🤩", "file": "vasco_0.png"},
+    {"nombre": "7% Descuento 🤑", "file": "vasco_1.png"},
     {"nombre": "Ganaste un Juguete 🧸🎉", "file": "vasco_4.png"},
 ]
 
@@ -21,10 +20,10 @@ def canjear_por_whatsapp(label):
     st.markdown(f"[Canjear ahora por WhatsApp]({wsp_url})", unsafe_allow_html=True)
 
 def main():
-    # layout amplio y un título de página
+    # layout ancho, luego lo centramos con un max-width y text-align
     st.set_page_config(page_title="Push The Button - Mundo Peluche", layout="wide")
 
-    # CSS para contenedor de 600px centrado
+    # CSS para un contenedor de 600px de ancho, centrado
     st.markdown("""
     <style>
     .block-container {
@@ -53,20 +52,10 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # -- ICONO MUNDO PELUCHE ("Soop.png") ARRIBA DE TODO --
-    # Lo leemos como bytes y lo mostramos al centro
-    try:
-        with open("Soop.png", "rb") as icon_file:
-            icon_data = icon_file.read()
-        st.image(icon_data, width=120)  # Ajustá el tamaño si querés
-    except FileNotFoundError:
-        st.warning("No se encontró el icono 'Soop.png'. Verifica el nombre y ubicación.")
-
-    # Títulos
+    # Títulos centrados
     st.markdown("<h1>Push The Button</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='color:#ff006e;'>Mundo Peluche</h3>", unsafe_allow_html=True)
-
-    st.write("Dale clic al botón y esperá unos segundos...")
+    st.markdown("Dale clic al botón y esperá unos segundos...")
 
     if "resultado" not in st.session_state:
         st.session_state.resultado = None
@@ -75,12 +64,15 @@ def main():
     if st.button("¡Presioná aquí! 🚀"):
         with st.spinner("Girando… un momento por favor…"):
             time.sleep(2)
+        # Sorteo
         elegido = random.choice(OPCIONES)
         st.session_state.resultado = elegido
 
+    # Mostrar resultado
     if st.session_state.resultado:
         r = st.session_state.resultado
-        # Leemos la imagen local
+
+        # Intentamos leer la imagen local como bytes
         try:
             with open(r["file"], "rb") as f:
                 data = f.read()
@@ -88,12 +80,16 @@ def main():
             st.warning(f"No se encontró la imagen: {r['file']}")
             return
 
-        # 3 columnas: la del medio (col2) para la imagen + label
+        # Dividimos la pantalla en 3 columnas: col1, col2, col3
         col1, col2, col3 = st.columns([1,2,1])
+
         with col2:
+            # Mostramos la imagen centrada en la columna
             st.image(data, width=180)
+            # Label debajo (por ej. "5% Descuento 🤩")
             st.markdown(f"## {r['nombre']}")
 
+        # Si es sin premio o no
         if "Sin premio" in r["nombre"]:
             st.warning("¡No ganaste nada! Intentalo de nuevo.")
         else:
@@ -101,7 +97,6 @@ def main():
             st.success("¡Felicidades! Ganaste un premio.")
             canjear_por_whatsapp(r["nombre"])
 
-    # Footer "powered by VASCO"
     st.markdown("<div class='footer-vasco'>powered by <strong>VASCO</strong></div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
