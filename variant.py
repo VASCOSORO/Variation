@@ -3,8 +3,9 @@ import time
 import random
 import urllib.parse
 
-# 5 opciones, 2 sin premio y 3 con premio
+# Definimos 5 opciones (2 sin premio, 3 con premio)
 OPCIONES = [
+    # Sin premio
     {
         "nombre": "Sin premio 😢",
         "file": "vasco_2.png"
@@ -13,6 +14,7 @@ OPCIONES = [
         "nombre": "Sin premio 😢",
         "file": "vasco_3.png"
     },
+    # Premios
     {
         "nombre": "5% Descuento 🤩",
         "file": "vasco_0.png"
@@ -29,7 +31,7 @@ OPCIONES = [
 
 def canjear_por_whatsapp(label):
     """
-    Link de WhatsApp para canjear el premio con Joni.
+    Muestra un link a WhatsApp para canjear el premio con Joni.
     """
     telefono_joni = "5491144042904"
     mensaje = f"Hola Joni, gané {label} en la Ruleta y quiero canjear mi premio."
@@ -40,17 +42,15 @@ def canjear_por_whatsapp(label):
 def main():
     st.set_page_config(page_title="Push The Button - Mundo Peluche", layout="centered")
 
-    # CSS para contenedor centrado
+    # CSS para centrar todo y definir estilos
     st.markdown("""
     <style>
-    /* Contenedor personalizado centrado */
-    .centered-layout {
+    /* Centrar todo el contenido */
+    main .block-container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        text-align: center; 
-        max-width: 500px; 
-        margin: 0 auto; 
+        text-align: center;
     }
     /* Botón */
     div.stButton > button {
@@ -70,44 +70,38 @@ def main():
     .resultado-img {
         display: block;
         margin: 1rem auto;
-        width: 180px;
+        width: 180px; /* Ajustar el tamaño de la imagen */
     }
     </style>
     """, unsafe_allow_html=True)
 
-    # Inicio del contenedor centrado
-    st.markdown("<div class='centered-layout'>", unsafe_allow_html=True)
-
-    # Título y Subtítulo centrados
-    st.markdown("<h1>Push The Button</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='color:#ff006e;'>Mundo Peluche</h3>", unsafe_allow_html=True)
+    # Título y subtítulo centrados
+    st.markdown("<h1 style='text-align:center;'>Push The Button</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center; color:#ff006e;'>Mundo Peluche</h3>", unsafe_allow_html=True)
 
     st.write("Dale clic al botón y esperá unos segundos...")
 
     if "resultado" not in st.session_state:
         st.session_state.resultado = None
 
+    # Botón
     if st.button("¡Presioná aquí! 🚀"):
         with st.spinner("Girando… un momento por favor…"):
-            time.sleep(2)  # Simula 2 segundos
-        # Sorteo
+            time.sleep(2)  # Simulamos 2s
         elegido = random.choice(OPCIONES)
         st.session_state.resultado = elegido
 
-    # Si hay resultado, mostramos
+    # Mostrar resultado
     if st.session_state.resultado:
         r = st.session_state.resultado
-        # Imagen al centro
-        st.image(r["file"], width=180)
+        # Mostrar imagen
+        st.image(r["file"], caption="", width=180)
         if "Sin premio" in r["nombre"]:
             st.warning("¡No ganaste nada! Intentalo de nuevo.")
         else:
             st.balloons()
             st.success(f"¡Felicidades! Te tocó: {r['nombre']}")
             canjear_por_whatsapp(r["nombre"])
-
-    # Cierre del contenedor
-    st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
