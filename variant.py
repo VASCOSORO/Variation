@@ -72,10 +72,10 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    if st.button("¡Tirar la Ruleta! 🎁"):
+    if st.button("¡Apreta el Boton! 🎁"):
         # Spinner "Girando..."
-        with st.spinner("Girando la Ruleta… un momento por favor…"):
-            time.sleep(2)  # 2s simulando giro
+        with st.spinner("Girando Tus Chances… un momento por favor…"):
+            time.sleep(2)  # 3s simulando giro
         # Sorteo
         elegido = random.choice(OPCIONES)
         st.session_state.resultado = elegido
