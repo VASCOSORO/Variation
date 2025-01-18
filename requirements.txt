@@ -1,4 +1,2 @@
 streamlit
-requests
-selenium
-webdriver-manager
+plotly
