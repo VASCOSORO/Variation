@@ -3,19 +3,18 @@ import time
 import random
 import urllib.parse
 
-# Definimos algunas opciones de "premio" o "sin premio"
-# con su imagen correspondiente.
+# Definimos 5 opciones (2 sin premio, 3 premios), con su nombre e imagen
 OPCIONES = [
-    # Dos "sin premio" (vasco_2 y vasco_3)
+    # Sin premio
     {
         "nombre": "Sin premio 😢",
-        "file": "vasco_2.png"
+        "file": "vasco_2.png"  # Ej: hongo triste
     },
     {
         "nombre": "Sin premio 😢",
-        "file": "vasco_3.png"
+        "file": "vasco_3.png"  # Ej: fantasmita
     },
-    # Tres "premios"
+    # Premios
     {
         "nombre": "5% Descuento 🤩",
         "file": "vasco_0.png"
@@ -32,7 +31,7 @@ OPCIONES = [
 
 def canjear_por_whatsapp(label):
     """
-    Muestra un link a WhatsApp Web para canjear el premio con Joni.
+    Muestra link a WhatsApp para canjear el premio con Joni.
     """
     telefono_joni = "5491144042904"
     mensaje = f"Hola Joni, gané {label} en la Ruleta y quiero canjear mi premio."
@@ -41,16 +40,15 @@ def canjear_por_whatsapp(label):
     st.markdown(f"[Canjear ahora por WhatsApp]({wsp_url})", unsafe_allow_html=True)
 
 def main():
-    st.set_page_config(page_title="Ruleta Sencilla con Emojis", layout="centered")
+    st.set_page_config(page_title="Ruleta Simple", layout="centered")
 
-    # Título con emojis
     st.title("🎉🤞 ¡Bienvenid@ a la Ruleta de la Suerte! 🤞🎉")
     st.write("Dale clic al botón y esperá unos segundos para ver tu suerte…")
 
     if "resultado" not in st.session_state:
-        st.session_state.resultado = None  # Guardará un dict {'nombre':..., 'file':...}
+        st.session_state.resultado = None
 
-    # Estilo del botón
+    # Estilos para el botón e imágenes
     st.markdown("""
     <style>
     div.stButton > button {
@@ -69,32 +67,30 @@ def main():
     .resultado-img {
         display: block;
         margin: 1rem auto;
-        width: 180px; /* Ajustar tamaño de la imagen según quieras */
+        width: 180px; /* Ajustá el tamaño de la imagen */
     }
     </style>
     """, unsafe_allow_html=True)
 
-    # Botón para "tirar"
     if st.button("¡Tirar la Ruleta! 🎁"):
-        # Mostramos un spinner con mensaje
+        # Spinner "Girando..."
         with st.spinner("Girando la Ruleta… un momento por favor…"):
-            time.sleep(2)  # Simula 2s de "giro"
-        # Elegimos resultado al azar
+            time.sleep(2)  # 2s simulando giro
+        # Sorteo
         elegido = random.choice(OPCIONES)
         st.session_state.resultado = elegido
 
-    # Si tenemos un resultado en session_state, lo mostramos
+    # Mostrar resultado si está definido
     if st.session_state.resultado:
         r = st.session_state.resultado
-        # Mostramos la imagen centrada
-        st.image(r["file"], caption="", use_column_width=False, width=180)
+        # Mostrar la imagen en tamaño fijo (width=180)
+        st.image(r["file"], caption="", width=180)
         
-        # Vemos si es sin premio o no
         if "Sin premio" in r["nombre"]:
-            st.warning(f"¡No ganaste nada! 😭 Volvé a intentar.")
+            st.warning("¡No ganaste nada! Intentalo de nuevo.")
         else:
             st.balloons()
-            st.success(f"🎉 ¡Felicidades! Te tocó: {r['nombre']}")
+            st.success(f"¡Felicidades! Te tocó: {r['nombre']}")
             canjear_por_whatsapp(r["nombre"])
 
 if __name__ == "__main__":
